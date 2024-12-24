@@ -1,6 +1,6 @@
 {
 "name": "Line",
-"version": "4.7.0",
+"version": "4.8.0",
 "description": "Smart Bot Made by Line",
 "main": "./lib/run.js",
 "scripts": {
@@ -8,8 +8,6 @@
 "author": "Line",
 "license": "MIT",
 "dependencies": {
-"@octokit/rest": "^18.12.0",
-"@vitalets/google-translate-api": "^7.0.0",
 "@whiskeysockets/baileys": "npm:@vreden/baileys@^6.7.7",
 "awesome-phonenumber":"^2.54.0",
 "axios": "^0.24.0",
