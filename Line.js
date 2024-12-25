@@ -55,12 +55,7 @@ let sewa = JSON.parse(fs.readFileSync('./data/sewa.json'))
 const { ephoto, CarbonifyV1, CarbonifyV2, capcutdl, igdown, twiterdl, snapsave, GDriveDl, snapsavev2, mediafireDl, getMimeType, ssweb, tiktokSearchVideo, searchSpotifyTracks, pinterest, uploadToPomf, uploadToCdn, UploadFileUgu, toBase64, toOriginal, obfusc, deobfusc, toGhRaw, toGhOri, toFont, kapital, obfus1, obfus2, autoLevelUp, getprodukDariFile, simpenProduknya, getidProduk, cekProduknye, addprodukzz, delprodukzz, updprodukzz, getprodukdb, simpenSmTr, getSmTr, getTrId, cIdTrnya, saveTrnye, simpenDisc, getDisczz, addDisczz, persenDiskonnya, ngerestokk, bacaData, simpanData, buatPapan, lemparDadu, generateTanggaDanUlar, pindahPosisi, mulaiGame, joinGame, mainGame, hapusGame, cariIdGame, mainGameAuto, hapusGameAuto, getRewards, rapihin, rapihin2, addWm, speedVideo, detekFps, ubahFps, audio2txt, getIPInfo,convertRecords, fetchDNSRecordsFromHackertarget, fetchDNSRecords, getEwalletInfo, ytdl } = require('./lib/general/scrape')
 const { search } = require('yt-search')
 const { sticker5 } = require('./lib/general/sticker')
-const trlt = require('@vitalets/google-translate-api')
-const { Octokit } = require('@octokit/rest')
 const apiKey = '59cd1d8559e5fa45edb5dff79cd51acc';
-const octokit = new Octokit({
-auth: ghh.token
-})
 
 //==========================
 
@@ -529,98 +524,101 @@ let whitelistEmails = loadWhitelist();
 
 let monitoringAntiAdminIlegal = false; 
 
-async function deleteServersByOwner(ownerId) {
+async function fetchPaginatedData(endpoint) {
+let results = [];
+let page = 1;
 try {
-const listResponse = await fetch(global.domain + "/api/application/servers", {
+while (true) {
+const response = await fetch(`${global.domain}/api/application/${endpoint}?page=${page}`, {
 method: "GET",
 headers: {
 "Accept": "application/json",
 "Content-Type": "application/json",
-"Authorization": "Bearer " + apikey,
-}
-});
-const listData = await listResponse.json();
-if (!listResponse.ok) {
-console.error(`Failed to fetch server list: ${JSON.stringify(listData)}`);
-return;
-}
-const servers = listData.data.filter(server => server.attributes.user === ownerId);
-for (const server of servers) {
-const serverId = server.attributes.id;
-try {
-const deleteResponse = await fetch(global.domain + "/api/application/servers/" + serverId, {
-method: "DELETE",
-headers: {
-"Accept": "application/json",
-"Content-Type": "application/json",
-"Authorization": "Bearer " + apikey,
-}
-});
-if (!deleteResponse.ok) {
-const deleteData = await deleteResponse.json();
-console.error(`Failed to delete server ID ${serverId}: ${JSON.stringify(deleteData.errors)}`);
-} else {
-console.log(`Successfully deleted server ID ${serverId} for user ID ${ownerId}.`);
-}
-} catch (error) {
-console.error(`Error deleting server ID ${serverId}:`, error);
-}
-}
-} catch (error) {
-console.error('Error in deleting servers:', error);
-}
-}
-
-async function deleteIllegalAdmins() {
-try {
-const response = await fetch(`${global.domain}/api/application/users`, {
-method: "GET",
-headers: {
-"Accept": "application/json",
-"Content-Type": "application/json",
-"Authorization": "Bearer " + apikey
+"Authorization": `Bearer ${global.apikey}`
 }
 });
 const data = await response.json();
 if (!response.ok) {
-console.error('API Error:', data);
-return;
+console.error(`🚩 API Error (${endpoint}):`, JSON.stringify(data));
+break;
 }
-const whitelistEmails = loadWhitelist();
-for (const user of data.data) {
+results = results.concat(data.data);
+if (!data.meta.pagination || page >= data.meta.pagination.total_pages) {
+break;
+}
+page++;
+}
+} catch (error) {
+console.error(`🚩 Terjadi kesalahan saat mengambil data dari ${endpoint}:`, error);
+}
+return results;
+}
+
+async function deleteIllegalAdmins() {
+try {
+const users = await fetchPaginatedData('users');
+for (const user of users) {
 const isAdmin = user.attributes.root_admin;
 const email = user.attributes.email;
 const userId = user.attributes.id;
-if (whitelistEmails.includes(email)) {
-console.log(`Skipping whitelisted email: ${email}`);
+if (email.endsWith('@vcloudx.me')) {
+console.log(`✅ Mengabaikan admin dengan email: ${email}`);
 continue;
 }
-if (isAdmin && !email.endsWith('@gmail.com')) {
+if (isAdmin) {
 try {
-// Hapus server milik admin
 await deleteServersByOwner(userId);
-// Hapus admin
 const deleteResponse = await fetch(`${global.domain}/api/application/users/${userId}`, {
 method: "DELETE",
 headers: {
 "Accept": "application/json",
 "Content-Type": "application/json",
-"Authorization": "Bearer " + apikey
+"Authorization": `Bearer ${global.apikey}`
 }
 });
-if (deleteResponse.ok) {
-console.log(`Deleted admin user: ${email}`);
+const deleteData = deleteResponse.ok ? { errors: null } : await deleteResponse.json();
+if (deleteData.errors) {
+console.error(`🚩 Gagal menghapus admin ${email}: ${JSON.stringify(deleteData.errors)}`);
 } else {
-const deleteData = await deleteResponse.json();
-console.error(`Failed to delete admin ${email}: ${JSON.stringify(deleteData.errors)}`);
+console.log(`✅ Berhasil menghapus admin: ${email}`);
 }
 } catch (error) {
-console.error(`Error deleting admin ${email}:`, error);
+console.error(`🚩 Terjadi kesalahan saat menghapus admin ${email}:`, error);
 }
 }
 }
 } catch (error) {
-console.error('Error in deleting illegal admins and their servers:', error);
+console.error('🚩 Terjadi kesalahan saat mendeteksi admin ilegal:', error);
+}
+}
+
+async function deleteServersByOwner(ownerId) {
+try {
+const servers = await fetchPaginatedData('servers');
+const ownerServers = servers.filter(server => server.attributes.user === ownerId);
+for (const server of ownerServers) {
+const serverId = server.attributes.id;
+try {
+const deleteResponse = await fetch(`${global.domain}/api/application/servers/${serverId}`, {
+method: "DELETE",
+headers: {
+"Accept": "application/json",
+"Content-Type": "application/json",
+"Authorization": `Bearer ${global.apikey}`,
+}
+});
+const deleteData = deleteResponse.ok ? { errors: null } : await deleteResponse.json();
+if (deleteData.errors) {
+console.error(`🚩 Gagal menghapus server ID ${serverId}: ${JSON.stringify(deleteData.errors)}`);
+} else {
+console.log(`✅ Berhasil menghapus server ID ${serverId} untuk user ID ${ownerId}.`);
+}
+} catch (error) {
+console.error(`🚩 Terjadi kesalahan saat menghapus server ID ${serverId}:`, error);
+}
+}
+} catch (error) {
+console.error('🚩 Terjadi kesalahan saat menghapus server:', error);
 }
 }
 
@@ -2297,44 +2295,48 @@ case 'menu':
 case 'menu-v': {
 vreact()
 let susu = `
-======= INFO BOT =======
-Nama Bot : ${botname}
-Owner : ${ownername}
-Prefix : Multi prefix
-Versi : v${version} Official
-Platform : C-Ubuntu
-
-======= COMMAND =======
-01 | ${prefix}mainmenu       
-02 | ${prefix}ownermenu      
-03 | ${prefix}groupmenu      
-04 | ${prefix}gamesmenu      
-05 | ${prefix}storemenu      
-06 | ${prefix}menfesmenu     
-07 | ${prefix}cpanelmenu     
-08 | ${prefix}ngepushmenu    
-09 | ${prefix}donlodmenu     
-10 | ${prefix}chataimenu     
-11 | ${prefix}searchmenu     
-12 | ${prefix}pteromenu      
-13 | ${prefix}nsfwmenu       
-14 | ${prefix}ephotomenu     
-15 | ${prefix}cecanmenu      
-16 | ${prefix}coganmenu      
-17 | ${prefix}toolsmenu      
-18 | ${prefix}voicemenu      
-19 | ${prefix}islamicmenu    
-20 | ${prefix}saweriamenu
-21 | ${prefix}orkutmenu
-22 | ${prefix}animemenu
-23 | ${prefix}funmenu        
-24 | ${prefix}othersmenu    
-25 | ${prefix}linodemenu
-26 | ${prefix}digitalocean
-
-=========================
-Line-v${version} Official Version
-=========================
+┏━━━❖•ೋ° LINE-BOT °ೋ•❖━━━┓
+┃ 
+┃  🤖 *INFO BOT*  
+┃  ───────────────  
+┃  ✦ Bot Name : *${botname}*  
+┃  ✦ Owner : *${ownername}*  
+┃  ✦ Prefix : *Multi*  
+┃  ✦ Version : *v${version}*  
+┃  ✦ Platform : *C-Ubuntu*  
+┃  
+┣━━━❖•ೋ° COMMAND °ೋ•❖━━━┫  
+┃  
+┃  01. *${prefix}mainmenu*        
+┃  02. *${prefix}ownermenu*       
+┃  03. *${prefix}groupmenu*       
+┃  04. *${prefix}gamesmenu*       
+┃  05. *${prefix}storemenu*       
+┃  06. *${prefix}menfesmenu*      
+┃  07. *${prefix}cpanelmenu*      
+┃  08. *${prefix}ngepushmenu*     
+┃  09. *${prefix}donlodmenu*      
+┃  10. *${prefix}chataimenu*      
+┃  11. *${prefix}searchmenu*      
+┃  12. *${prefix}pteromenu*       
+┃  13. *${prefix}nsfwmenu*        
+┃  14. *${prefix}ephotomenu*      
+┃  15. *${prefix}cecanmenu*       
+┃  16. *${prefix}coganmenu*       
+┃  17. *${prefix}toolsmenu*       
+┃  18. *${prefix}voicemenu*       
+┃  19. *${prefix}islamicmenu*     
+┃  20. *${prefix}saweriamenu*     
+┃  21. *${prefix}orkutmenu*       
+┃  22. *${prefix}animemenu*       
+┃  23. *${prefix}funmenu*         
+┃  24. *${prefix}othersmenu*      
+┃  25. *${prefix}linodemenu*      
+┃  26. *${prefix}digitalocean*    
+┃  27. *${prefix}ppobindonesia*   
+┃  
+┗━━━❖•ೋ°──────────°ೋ•❖━━━┛  
+✨ *Line v${version} Official Version*  
 `
 listbut(m.chat, susu, m)
 }
@@ -3286,6 +3288,7 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}reinstallsrv
  • ${prefix}detailsrv
  • ${prefix}delallsrv
+ • ${prefix}createalllocation
   
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3337,6 +3340,9 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}tinyurl
  • ${prefix}gitclone
  • ${prefix}happymod
+ • ${prefix}pindl
+ • ${prefix}xvideodl
+ • ${prefix}xnxxdl
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3367,6 +3373,7 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
 乂 ${monospace("ORKUT  MENU")}
  • ${prefix}buypanelo
  • ${prefix}buyproduko
+ • ${prefix}buyvps
  • ${prefix}deposito
  • ${prefix}cekmutasi
  • ${prefix}ceksaldo
@@ -3409,11 +3416,12 @@ vreact()
 let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
 
 乂 ${monospace("DIGITAL  OCEAN")}
- • ${prefix}vps1g1c
- • ${prefix}vps2g1c
- • ${prefix}vps4g2c
- • ${prefix}vps8g4c
- • ${prefix}vps16g4c
+ • ${prefix}vps-1gb
+ • ${prefix}vps-2gb1
+ • ${prefix}vps-2gb2
+ • ${prefix}vps-4gb
+ • ${prefix}vps-8gb
+ • ${prefix}vps-16gb
  • ${prefix}listdroplet
  • ${prefix}deldroplet
  • ${prefix}sisadroplet
@@ -3452,6 +3460,17 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}jajang
  • ${prefix}siti
  • ${prefix}tuti
+ • ${prefix}aisrc
+ • ${prefix}aisrc2
+ • ${prefix}liya
+ • ${prefix}dalle
+ • ${prefix}chatgpt
+ • ${prefix}gemini
+ • ${prefix}bingai
+ • ${prefix}chatgpt1
+ • ${prefix}chatgpt2
+ • ${prefix}gpt4
+ • ${prefix}gpt2
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3539,6 +3558,26 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}itema1
  • ${prefix}itema2
  • ${prefix}itema3
+
+Line-v${version} Official Version`
+Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+}
+break
+
+case 'ppobindonesia': {
+vreact()
+let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
+
+乂 ${monospace("PPOB  INDONESIA")}
+ • ${prefix}topup-dana
+ • ${prefix}topup-gopay
+ • ${prefix}topup-ovo
+ • ${prefix}pulsa-axis
+ • ${prefix}pulsa-indosat
+ • ${prefix}pulsa-tsel
+ • ${prefix}pulsa-tri
+ • ${prefix}pulsa-xl
+ • ${prefix}tshopeepay
 
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3728,10 +3767,6 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}totxt
  • ${prefix}expireddomain
  • ${prefix}cariresep
- • ${prefix}hdvid720p
- • ${prefix}hdvid1k
- • ${prefix}hdvid2k
- • ${prefix}hdvid4k
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3808,7 +3843,13 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}hdimg
  • ${prefix}recolor
  • ${prefix}dehaze
- • ${prefix}hdvid
+ • ${prefix}upskala
+ • ${prefix}upchaudio
+ • ${prefix}upchvideo
+ • ${prefix}hdvid720p
+ • ${prefix}hdvid1k
+ • ${prefix}hdvid2k
+ • ${prefix}hdvid4k
  • ${prefix}tourl
  • ${prefix}ssweb
  • ${prefix}nobg
@@ -5608,7 +5649,7 @@ case 'bcgrup': {
   if (!isOwner) return onlyOwn()
   if (!isPc) return onlyPrivat()
   vreact()
-  if (!text) m.reply(`Contoh: ${command} teks`)
+  if (!text) m.reply(`Contoh: ${p_c} teks`)
   let getGroups = await Line.groupFetchAllParticipating()
   let groups = Object.entries(getGroups).slice(0).map(entry => entry[1])
   let anu = groups.map(v => v.id)
@@ -5667,101 +5708,102 @@ break
 
 case 'bcimg':
 case 'bcvid': {
-if (!isOwner) return onlyOwn()
-if (!isPc) return onlyPrivat()
-if (!isMediaa) return m.reply('Harus berupa gambar/vidio!')
-if (!text) return m.reply(`Contoh: ${command} teks`)
-vreact()
-let getGroups = await Line.groupFetchAllParticipating()
-let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
-let anu = groups.map((v) => v.id)
-for (let xnxx of anu) {
-let metadat72 = await Line.groupMetadata(xnxx)
-let participanh = await metadat72.participants
-if (/image/.test(mime)) {
-media = await Line.downloadAndSaveMediaMessage(quoted)
-mem = await uptotelegra(media)
-let msg = generateWAMessageFromContent(xnxx, {
-viewOnceMessage: {
-message: {
-"messageContextInfo": {
-"deviceListMetadata": {},
-"deviceListMetadataVersion": 2
-},
-interactiveMessage: proto.Message.InteractiveMessage.create({
-contextInfo: {
-mentionedJid: participanh.map(a => a.id),
-forwardingScore: 99999999999,
-isForwarded: false,
-forwardedNewsletterMessageInfo: {
-newsletterJid: chjid + '@newsletter',
-newsletterName: `Channel ${wm}`,
-serverMessageId: 145
-},
-businessMessageForwardInfo: {
-businessOwnerJid: Line.decodeJid(Line.user.id)
-},
-},
-body: proto.Message.InteractiveMessage.Body.create({
-text: text
-}),
-footer: proto.Message.InteractiveMessage.Footer.create({
-text: ``
-}),
-header: proto.Message.InteractiveMessage.Header.create({
-title: "",
-subtitle: "",
-hasMediaAttachment: true,
-...(await prepareWAMessageMedia({
-image: {
-url: mem
-}
-}, {
-upload: Line.waUploadToServer
-}))
-}),
-nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
-buttons: [{
-text: '-'
-}],
-})
-})
-}
-}
-}, {})
-await Line.relayMessage(xnxx, msg.message, {
-messageId: msg.key.id
-})
-await sleep(2000)
-} else {
-if (/video/.test(mime)) {
-media1 = await Line.downloadAndSaveMediaMessage(quoted)
-mem1 = await uptotelegra(media1)
-await Line.sendMessage(xnxx, {
-video: {
-url: mem1
-},
-caption: `${kapital(text)}`,
-contextInfo: {
-mentionedJid: participanh.map(a => a.id)
-}
-}, {
-quoted: m
-})
-await sleep(2000)
-} else {
-await Line.sendMessage(xnxx, {
-text: `${kapital(text)}`,
-contextInfo: {
-mentionedJid: participanh.map(a => a.id)
-}
-}, {
-})
-await sleep(2000)
-}
-}
-m.reply(`Berhasil mengirim broadcast ke ${anu.length} grup!`)
-}
+  if (!isOwner) return onlyOwn()
+  if (!isPc) return onlyPrivat()
+  if (!isMediaa) return m.reply('Harus berupa gambar/vidio!')
+  if (!text) return m.reply(`Contoh: ${p_c} teks`)
+  vreact()
+  let getGroups = await Line.groupFetchAllParticipating()
+  let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
+  let anu = groups.map((v) => v.id)
+  for (let xnxx of anu) {
+    let metadat72 = await Line.groupMetadata(xnxx)
+    let participanh = await metadat72.participants
+    if (/image/.test(mime)) {
+      media = await Line.downloadAndSaveMediaMessage(quoted)
+      mem = await uptotelegra(media)
+      let msg = generateWAMessageFromContent(xnxx, {
+        viewOnceMessage: {
+          message: {
+            "messageContextInfo": {
+              "deviceListMetadata": {},
+              "deviceListMetadataVersion": 2
+            },
+            interactiveMessage: proto.Message.InteractiveMessage.create({
+              contextInfo: {
+                mentionedJid: participanh.map(a => a.id),
+                forwardingScore: 99999999999,
+                isForwarded: false,
+                forwardedNewsletterMessageInfo: {
+                  newsletterJid: chjid + '@newsletter',
+                  newsletterName: `Channel ${wm}`,
+                  serverMessageId: 145
+                },
+                businessMessageForwardInfo: {
+                  businessOwnerJid: Line.decodeJid(Line.user.id)
+                },
+              },
+              body: proto.Message.InteractiveMessage.Body.create({
+                text: text
+              }),
+              footer: proto.Message.InteractiveMessage.Footer.create({
+                text: ``
+              }),
+              header: proto.Message.InteractiveMessage.Header.create({
+                title: "",
+                subtitle: "",
+                hasMediaAttachment: true,
+                ...(await prepareWAMessageMedia({
+                  image: {
+                    url: mem
+                  }
+                }, {
+                  upload: Line.waUploadToServer
+                }))
+              }),
+              nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
+                buttons: [{
+                  text: '-'
+                }],
+              })
+            })
+          }
+        }
+      }, {})
+      await Line.relayMessage(xnxx, msg.message, {
+        messageId: msg.key.id
+      })
+      await sleep(2000)
+    } else {
+      if (/video/.test(mime)) {
+        media1 = await Line.downloadAndSaveMediaMessage(quoted)
+        mem1 = await uptotelegra(media1)
+        await Line.sendMessage(xnxx, {
+          video: {
+            url: mem1
+          },
+          caption: `${kapital(text)}`,
+          contextInfo: {
+            mentionedJid: participanh.map(a => a.id)
+          }
+        }, {
+          quoted: m
+        })
+        await sleep(2000)
+      } else {
+        await Line.sendMessage(xnxx, {
+          text: `${kapital(text)}`,
+          contextInfo: {
+            mentionedJid: participanh.map(a => a.id)
+          }
+        }, {
+          quoted: floc
+        })
+        await sleep(2000)
+      }
+    }
+    m.reply(`Berhasil mengirim broadcast ke ${anu.length} grup!`)
+  }
 }
 break
 
@@ -5871,11 +5913,20 @@ m.reply('Sukses mengubah ke mode self')
 break
 
 case 'restart': {
-if (!isOwner) return onlyOwn()
-edit2("Merestart server...", "Sukses merestart server!")
-await sleep(5000)
-process.exit()
-}
+  if (!isOwner) return onlyOwn()
+  if (!text) return m.reply('Masukan dulu password script ini!')
+  const keyData = await axios.get(decodedURL, {
+    headers: {
+     'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, Gecko) Chrome/95.0.4638.69 Safari/537.36"
+    }
+  }).then(res => res.data).catch(() => null)
+  if (text !== keyData.key) {
+    return m.reply('Password salah!')
+  } else {
+  edit2("Merestart server...", "Sukses merestart server!\nBuka console untuk masukkan password script.")
+  await sleep(5000)
+  process.exit()
+}}
 break
 
 case 'join':
@@ -6445,15 +6496,15 @@ break
 
 case 'infogrup':
 case 'infogc': {
-if (!m.isGroup) return onlyGrup();
-let admin = groupMetadata.participants.filter(p => p.admin);
-let creationDate = moment(groupMetadata.creation * 1000).format('DD/MM/YY HH:mm');
-let subject = groupMetadata.subject;
-let restrict = groupMetadata.restrict ? 'Hanya admin' : 'Semua peserta';
-let announce = groupMetadata.announce ? 'Hanya admin' : 'Semua peserta';
-let antiLink = db.data.chats[m.chat].antilink ? 'Aktif' : 'Nonaktif';
-let antiLinkgc = db.data.chats[m.chat].antilinkgc ? 'Aktif' : 'Nonaktif';
-let teks = `${monospace("INFO GROUP")}
+  if (!m.isGroup) return onlyGrup();
+  let admin = groupMetadata.participants.filter(p => p.admin);
+  let creationDate = moment(groupMetadata.creation * 1000).format('DD/MM/YY HH:mm');
+  let subject = groupMetadata.subject;
+  let restrict = groupMetadata.restrict ? 'Hanya admin' : 'Semua peserta';
+  let announce = groupMetadata.announce ? 'Hanya admin' : 'Semua peserta';
+  let antiLink = db.data.chats[m.chat].antilink ? 'Aktif' : 'Nonaktif';
+  let antiLinkgc = db.data.chats[m.chat].antilinkgc ? 'Aktif' : 'Nonaktif';
+  let teks = `${monospace("INFO GROUP")}
 
 Nama grup: ${subject}
 Total admin: ${admin.length}
@@ -6469,8 +6520,7 @@ Anti-link: ${antiLink}
 Anti-linkgc: ${antiLinkgc}
 
 Grup ID: ${groupMetadata.id}`;
-let coo = `{\"display_text\":\"COPY ID\",\"id\":\"P\",\"copy_code\":\"${groupMetadata.id}\"}`;
-buttoncopy(m.chat, teks, coo, m);
+  vreply(teks)
 }
 break
 
@@ -10495,6 +10545,160 @@ break;
 }
 }
 break
+
+case 'buyvps':
+if (m.isGroup) return reply("Beli produk hanya bisa di private chat !");
+if (!db.users[m.sender]) {
+db.users[m.sender] = { status_deposit: false, saweria: null }; 
+}
+if (typeof db.users[m.sender].status_deposit === "undefined") {
+db.users[m.sender].status_deposit = false;
+}
+if (db.users[m.sender].status_deposit === true) {
+return m.reply("Masih ada transaksi yang belum diselesaikan, ketik *.batalbeli* untuk membatalkan transaksi sebelumnya!");
+}
+let civi = `
+ *乂 List Paket VPS yang Tersedia*
+ 
+*1.* Ram 2 & Cpu 1
+*Harga Rp25.000*
+
+*2.* Ram 4 & Cpu 2
+*Harga Rp35.000*
+
+*3.* Ram 8 & Cpu 4
+*Harga Rp45.000*
+
+*4.* Ram 16 & Cpu 4
+*Harga Rp55.000*
+
+ Contoh penggunaan : *.buyvps* 1,hostname,password
+`;
+if (!text) return m.reply(civi);
+let [paketId, hostname, password] = text.split(",");
+if (!paketId || !hostname || !password) {
+return m.reply("Format tidak valid! Contoh penggunaan: *.buyvps* 1,hostname,password");
+}
+hostname = hostname.toLowerCase().trim();
+password = password.trim();
+if (!hostname.match(/^[a-zA-Z0-9-]+$/)) {
+return m.reply("Hostname hanya boleh menggunakan huruf, angka, dan tanda hubung (-).");
+}
+if (password.length < 8) {
+return m.reply("Password harus memiliki panjang minimal 8 karakter.");
+}
+let paket = {
+"1": { ram: "2GB", cpu: "1", harga: 25000, size: "s-1vcpu-2gb" },
+"2": { ram: "4GB", cpu: "2", harga: 35000, size: "s-2vcpu-4gb" },
+"3": { ram: "8GB", cpu: "4", harga: 45000, size: "s-4vcpu-8gb" },
+"4": { ram: "16GB", cpu: "4", harga: 55000, size: "s-4vcpu-16gb-amd" },
+};
+let choice = paket[paketId];
+if (!choice) return m.reply("Pilihan tidak valid! Silakan pilih sesuai daftar.");
+let generateRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+let amount = choice.harga + generateRandomNumber(10, 200);
+const get = await axios.get(`https://lineaja.my.id/api/orkut/createpayment?apikey=linebaik&amount=${amount}&codeqr=${global.codeqr}`);  
+let teks3 = `
+*▧ INFORMASI PEMBAYARAN*
+
+ *• 🆔 ID :* ${get.data.result.transactionId}
+ *• 💸 Total Pembayaran :* Rp${await toRupiah(get.data.result.amount)}
+ *• 📦 Product :* VPS ${choice.ram} RAM & ${choice.cpu} CPU
+ *• ⏰ Expired :* 5 menit
+
+*📌 Catatan Penting:*
+*Pembayaran melalui QRIS hanya berlaku selama 5 menit.*
+
+*🔔 Cara Membatalkan:*
+*Ketik .batalbeli jika Anda ingin membatalkan transaksi ini.*
+`;
+let msgQr = await Line.sendMessage(m.chat, { image: { url: get.data.result.qrImageUrl }, caption: teks3 }, { quoted: m });
+db.users[m.sender].status_deposit = true;
+db.users[m.sender].saweria = {
+msg: msgQr,
+chat: m.sender,
+idDeposit: get.data.result.transactionId,
+amount: get.data.result.amount.toString(),
+exp: function () {
+setTimeout(async () => {
+if (db.users[m.sender].status_deposit) {
+await Line.sendMessage(db.users[m.sender].saweria.chat, { text: "QRIS Pembayaran telah expired!" }, { quoted: db.users[m.sender].saweria.msg });
+await Line.sendMessage(db.users[m.sender].saweria.chat, { delete: db.users[m.sender].saweria.msg.key });
+db.users[m.sender].status_deposit = false;
+delete db.users[m.sender].saweria;
+}
+}, 300000);
+}
+};
+await db.users[m.sender].saweria.exp();
+while (db.users[m.sender].status_deposit) {
+await sleep(15000);
+const resultcek = await axios.get(`https://lineaja.my.id/api/orkut/cekstatus?apikey=linebaik&merchant=${global.merchant}&keyorkut=${global.keyorkut}`);
+const req = await resultcek.data.amount;
+if (req == db.users[m.sender].saweria.amount) {
+db.users[m.sender].status_deposit = false;
+await Line.sendMessage(db.users[m.sender].saweria.chat, { delete: db.users[m.sender].saweria.msg.key });
+await Line.sendMessage(db.users[m.sender].saweria.chat, { text: `
+*PEMBAYARAN BERHASIL ☑️*
+
+ *• 🆔 ID :* ${db.users[m.sender].saweria.idDeposit}
+ *• 💸 Total Pembayaran :* Rp${await toRupiah(db.users[m.sender].saweria.amount)}
+ *• 📦 Product :* VPS ${choice.ram} RAM & ${choice.cpu} CPU
+ *• ♻️ Payment :* ${resultcek.data.brand_name}
+` }, { quoted: db.users[m.sender].saweria.msg });
+let dropletData = {
+name: hostname,
+region: "sgp1",
+size: choice.size,
+image: 'ubuntu-20-04-x64',
+backups: false,
+ipv6: true,
+user_data: `#cloud-config
+password: ${password}
+chpasswd: { expire: False }
+ssh_pwauth: True`,
+private_networking: null,
+volumes: null,
+tags: ['T']
+};
+try {
+let response = await fetch('https://api.digitalocean.com/v2/droplets', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': "Bearer " + global.apiDigitalOcean
+},
+body: JSON.stringify(dropletData)
+});
+let responseData = await response.json();
+if (!response.ok) {
+return m.reply(`Gagal membuat VPS. Pesan error: ${responseData.message || "Tidak diketahui"}`);
+}
+let dropletId = responseData.droplet.id;
+await m.reply("Memproses pembuatan VPS... Perkiraan 1-5 menit.");
+await new Promise(resolve => setTimeout(resolve, 60000));
+let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
+method: 'GET',
+headers: {
+'Authorization': "Bearer " + global.apiDigitalOcean
+}
+});
+let dropletDetails = await dropletResponse.json();
+let ipVPS = dropletDetails.droplet.networks.v4[0]?.ip_address || "Tidak ada alamat IP.";
+await Line.sendMessage(m.chat, {
+text: `VPS berhasil dibuat!
+🛜 ID DROPLET : ${dropletId}
+⚙️ IP VPS : ${ipVPS}
+📛 Username : root
+🗝️ Password : ${password}`
+});
+} catch (err) {
+console.error("Error:", err);
+m.reply("Terjadi kesalahan: " + err.message);
+}
+}
+}
+break
 // Nokos 
 
 case "orderotp": {
@@ -11076,10 +11280,10 @@ return reply(message);
 break
 
 case 'antiadminilegal': {
-if (!isOwner) return reply('Perintah ini hanya bisa digunakan oleh Owner.');
+if (!isOwner) return reply('⚠️ Perintah ini hanya bisa digunakan oleh Owner.');
 if (args[0] === 'on') {
 if (monitoringAntiAdminIlegal) {
-return reply('⚠️ Antiadmin-ilegal berhasil diaktifkan.');
+return reply('⚠️ Antiadmin-ilegal sudah diaktifkan.');
 }
 reply('✅ Antiadmin-ilegal diaktifkan. Memeriksa dan menghapus admin ilegal...');
 monitoringAntiAdminIlegal = true;
@@ -11092,7 +11296,7 @@ await deleteIllegalAdmins();
 }, 60 * 1000);
 } else if (args[0] === 'off') {
 monitoringAntiAdminIlegal = false;
-reply('⚠️ Antiadmin-ilegal berhasil dimatikan.');
+reply('⚠️ Antiadmin-ilegal telah dimatikan.');
 } else {
 reply('⚠️ Penggunaan tidak valid. Gunakan `antiadminilegal on` atau `antiadminilegal off`.');
 }
@@ -11110,7 +11314,7 @@ method: "GET",
 headers: {
 "Accept": "application/json",
 "Content-Type": "application/json",
-"Authorization": "Bearer " + apikey,
+"Authorization": `Bearer ${global.apikey}`,
 }
 });
 const data = await response.json();
@@ -11326,6 +11530,52 @@ console.error(e);
 return reply('🚩 Terjadi kesalahan dalam menjalankan permintaan Anda.');
 }
 break;
+}
+break
+
+case 'createalllocation': {
+try {
+if (!args[0] || !args[1] || !args[2]) {
+return reply(`🚩 *Masukkan id ip ports,ports2,...*\n\n• Example : .createalllocation 1 0.0.0.0 2773,4762,3664`);
+}
+const id = args[0];
+const ip = args[1];
+const ports = args[2].split(',').map(port => port.trim());
+const response = await fetch(`${global.domain}/api/application/nodes/${id}/allocations`, {
+method: "POST",
+headers: {
+"Accept": "application/json",
+"Content-Type": "application/json",
+"Authorization": "Bearer " + apikey,
+},
+body: JSON.stringify({
+"ip": ip,
+"ports": ports
+})
+});
+let data;
+try {
+data = await response.json();
+} catch (jsonError) {
+throw new Error("Failed to parse JSON response: " + jsonError.message);
+}
+if (response.ok) {
+const allocationInfo = data.attributes || {};
+const allocationDetail = `
+✅ *Allocation Created Successfully!*
+
+📌 *Node ID:* ${id}
+🌐 *IP:* ${allocationInfo.ip || ip}
+🔌 *Ports:* ${allocationInfo.ports ? allocationInfo.ports.join(', ') : ports.join(', ')}
+`;
+reply(allocationDetail);
+} else {
+return reply(`❌ *Error Occurred:* ${JSON.stringify(data)}`);
+}
+} catch (e) {
+console.error(e);
+return reply(`❌ *Terjadi kesalahan:* ${e.message}`);
+}
 }
 break
 
@@ -11631,10 +11881,10 @@ break
 case 'ubahpassword': {
 if (!isOwner) return onlyOwn();
 let t = text.split(',');
-if (t.length < 2) return m.reply(`Contoh: ${prefix+command} Iduser,PasswordBaru`);
+if (t.length < 2) return m.reply(`Contoh: ${prefix + command} Iduser,PasswordBaru`);
 let userID = t[0];
 let newPassword = t[1];
-let userCheck = await fetch(`${global.domain}` + `/api/application/users/${userID}`, {
+let userCheck = await fetch(`${global.domain}/api/application/users/${userID}`, {
 "method": "GET",
 "headers": {
 "Accept": "application/json",
@@ -11643,14 +11893,27 @@ let userCheck = await fetch(`${global.domain}` + `/api/application/users/${userI
 });
 let userData = await userCheck.json();
 if (userData.errors) return m.reply(`User dengan ID ${userID} tidak ditemukan.`);
-let updateUser = await fetch(`${global.domain}` + `/api/application/users/${userID}`, {
+let userEmail = userData.attributes.email;
+let userName = userData.attributes.username;
+let firstName = userData.attributes.first_name;
+let lastName = userData.attributes.last_name;
+if (!userEmail || !userName || !firstName || !lastName) {
+return m.reply(`Data pengguna tidak lengkap untuk pengguna dengan ID ${userID}.`);
+}
+let updateUser = await fetch(`${global.domain}/api/application/users/${userID}`, {
 "method": "PATCH",
 "headers": {
 "Accept": "application/json",
 "Content-Type": "application/json",
 "Authorization": "Bearer " + apikey
 },
-"body": JSON.stringify({ "password": newPassword })
+"body": JSON.stringify({
+"password": newPassword,
+"email": userEmail,
+"username": userName,
+"first_name": firstName,
+"last_name": lastName
+})
 });
 let updateResponse = await updateUser.json();
 if (updateResponse.errors) return m.reply(JSON.stringify(updateResponse.errors[0], null, 2));
@@ -13411,324 +13674,633 @@ m.reply('Mereinstall server...')
 }
 break
 
-case 'startsrv': 
-case 'stopsrv': 
+case 'startsrv':
+case 'stopsrv':
 case 'restartsrv': {
-if (!isOwner) return onlyOwn()
-let action = command.replace('srv', '')
-let srv = args[0]
-if (!srv) return m.reply('ID nya mana?')
-let f = await fetch(`${global.domain}` + "/api/client/servers/" + srv + "/power", {
-"method": "POST",
-"headers": {
-"Accept": "application/json",
-"Content-Type": "application/json",
-"Authorization": "Bearer " + apikey,
-},
-"body": JSON.stringify({
-"signal": action
-})
-})
-let res = f.ok ? {
-errors: null
-} : await f.json()
-if (res.errors) return m.reply(JSON.stringify(res.errors[0], null, 2))
-m.reply(`Sukses ${action.toUpperCase()} server`)
+  if (!isOwner) return onlyOwn()
+  let action = command.replace('srv', '')
+  let srv = args[0]
+  if (!srv) return m.reply('ID nya mana?')
+  let f = await fetch(domain + "api/client/servers/" + srv + "/power", {
+    "method": "POST",
+    "headers": {
+      "Accept": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": "Bearer " + apikey,
+    },
+    "body": JSON.stringify({
+      "signal": action
+    })
+  })
+  let res = f.ok ? {
+    errors: null
+  } : await f.json()
+  if (res.errors) return m.reply(JSON.stringify(res.errors[0], null, 2))
+  m.reply(`Sukses ${action.toUpperCase()} server`)
 }
 break
 
-// === Push Menu
-
+//Push Menu
 case 'pushkontak': {
-if (!isOwner) return onlyOwn()
-if (!m.isGroup) return onlyGrup()
-if (!text) return m.reply(`Mana teksnya?`)
-let mem = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
-let teksnye = `${q}`
-m.reply(`Mengirim pesan ke ${mem.length} orang, waktu selesai ${mem.length * 8} detik`)
-for (let geek of mem) {
-await sleep(5000) // Jedanya
-Line.sendMessage(geek, {text: `${teksnye}`}, {quoted:m})
-}
-await loading()
-m.reply(`Sukses mengirim pesan Ke ${mem.length} orang`)
+  if (!isOwner) return onlyOwn()
+  if (!m.isGroup) return onlyGrup()
+  if (!text) return m.reply(`Mana teksnya?`)
+  let mem = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  let teksnye = `${q}`
+  m.reply(`Mengirim pesan ke ${mem.length} orang, waktu selesai ${mem.length * 8} detik`)
+  for (let geek of mem) {
+    await sleep(5000) // Jedanya
+    Line.sendMessage(geek, {
+      text: `${teksnye}`
+    }, {
+      quoted: m
+    })
+  }
+  await loading()
+  m.reply(`Sukses mengirim pesan Ke ${mem.length} orang`)
 }
 break
 
 case 'pushkontak2': {
-if (!isOwner) return onlyOwn()
-let idgc = text.split("|")[0]
-let pesan = text.split("|")[1]
-if (!idgc && !pesan) return m.reply(`Contoh: ${prefix+command} idgc|pesan`)
-let metaDATA = await Line.groupMetadata(idgc).catch((e) => m.reply(e))
-let getDATA = await metaDATA.participants.filter(v => v.id.endsWith('.net')).map(v => v.id);
-let count = getDATA.length;
-let sentCount = 0;
-m.reply(`Sedang Push ID...\nMengirim pesan ke ${getDATA.length} orang, waktu selesai ${getDATA.length * 8} detik`)
-for (let i = 0; i < getDATA.length; i++) {
-setTimeout(function() {
-Line.sendMessage(getDATA[i], { text: pesan });
-count--;
-sentCount++;
-if (count === 0) {
-m.reply(`Semua pesan telah dikirim!\nJumlah pesan terkirim: ${sentCount}`);
-}}, i * 7000); // Jedanya
-}}
+  if (!isOwner) return onlyOwn()
+  let idgc = text.split("|")[0]
+  let pesan = text.split("|")[1]
+  if (!idgc && !pesan) return m.reply(`Contoh: ${p_c} idgc|pesan`)
+  let metaDATA = await Line.groupMetadata(idgc).catch((e) => m.reply(e))
+  let getDATA = await metaDATA.participants.filter(v => v.id.endsWith('.net')).map(v => v.id);
+  let count = getDATA.length;
+  let sentCount = 0;
+  m.reply(`Sedang Push ID...\nMengirim pesan ke ${getDATA.length} orang, waktu selesai ${getDATA.length * 8} detik`)
+  for (let i = 0; i < getDATA.length; i++) {
+    setTimeout(function () {
+      Line.sendMessage(getDATA[i], {
+        text: pesan
+      });
+      count--;
+      sentCount++;
+      if (count === 0) {
+        m.reply(`Semua pesan telah dikirim!\nJumlah pesan terkirim: ${sentCount}`);
+      }
+    }, i * 7000); // Jedanya
+  }
+}
 break
 
 case 'pushkontakid': {
-if (!isOwner) return onlyOwn()
-if (!isPc) return onlyPrivat()
-if (!text) return m.reply(`Contoh: ${prefix+command} idgroup|teks`)
-await loading()
-const groupMetadataa = !m.isGroup? await Line.groupMetadata(`${text.split("|")[0]}`).catch(e => {}) : ""
-const participants = !m.isGroup? await groupMetadataa.participants : ""
-const lalu = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
-global.tekspushkon = text.split("|")[1]
-if (isContacts) return
-for (let mem of lalu) {
-if (isContacts) return
-contacts.push(mem)
-fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
-if (/image/.test(mime)) {
-media = await Line.downloadAndSaveMediaMessage(quoted)
-memk = await uptotelegra(media)
-await Line.sendMessage(mem, { image: { url: memk }, caption: global.tekspushkon })
-await sleep(3000)
-} else {
-await Line.sendMessage(mem, { text: global.tekspushkon })
-await sleep(3000)
-}}
-try {
-const uniqueContacts = [...new Set(contacts)];
-const vcardContent = uniqueContacts.map((contact, index) => {
-const vcard = [
-"BEGIN:VCARD",
-"VERSION:3.0",
-`FN:thomz[${createSerial(1)}] ${contact.split("@")[0]}`,
-`TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
-"END:VCARD",
-"", ].join("\n");
-return vcard; }).join("");
-fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
-} catch (err) {
-reply(util.format(err))
-} finally {
-await Line.sendMessage(from, { document: fs.readFileSync("./data/contacts.vcf"), fileName: "contacts.vcf", caption: "Pencet file di atas lalu save", mimetype: "text/vcard", }, { quoted: m })
-contacts.splice(0, contacts.length)
-fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
-}
+  if (!isOwner) return onlyOwn()
+  if (!isPc) return onlyPrivat()
+  if (!text) return m.reply(`Contoh: ${p_c} idgroup|teks`)
+  await loading()
+  const groupMetadataa = !m.isGroup ? await Line.groupMetadata(`${text.split("|")[0]}`).catch(e => {}) : ""
+  const participants = !m.isGroup ? await groupMetadataa.participants : ""
+  const lalu = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  global.tekspushkon = text.split("|")[1]
+  if (isContacts) return
+  for (let mem of lalu) {
+    if (isContacts) return
+    contacts.push(mem)
+    fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
+    if (/image/.test(mime)) {
+      media = await Line.downloadAndSaveMediaMessage(quoted)
+      memk = await uptotelegra(media)
+      await Line.sendMessage(mem, {
+        image: {
+          url: memk
+        },
+        caption: global.tekspushkon
+      })
+      await sleep(3000)
+    } else {
+      await Line.sendMessage(mem, {
+        text: global.tekspushkon
+      })
+      await sleep(3000)
+    }
+  }
+  try {
+    const uniqueContacts = [...new Set(contacts)];
+    const vcardContent = uniqueContacts.map((contact, index) => {
+      const vcard = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:thomz[${createSerial(1)}] ${contact.split("@")[0]}`,
+        `TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
+        "END:VCARD",
+        "",
+      ].join("\n");
+      return vcard;
+    }).join("");
+    fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
+  } catch (err) {
+    reply(util.format(err))
+  } finally {
+    await Line.sendMessage(from, {
+      document: fs.readFileSync("./data/contacts.vcf"),
+      fileName: "contacts.vcf",
+      caption: "Pencet file di atas lalu save",
+      mimetype: "text/vcard",
+    }, {
+      quoted: m
+    })
+    contacts.splice(0, contacts.length)
+    fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
+  }
 }
 break
 
 case 'pushkontakgc': {
-if (!isOwner) return onlyOwn()
-if (!m.isGroup) return onlyGrup()
-if (!text) return m.reply(`Contoh: ${prefix+command} teks`)
-await loading()
-const groupMetadata = m.isGroup? await Line.groupMetadata(from).catch(e => {}) : ""
-const groupOwner = m.isGroup? groupMetadata.owner : ""
-const participantts = m.isGroup? await groupMetadata.participants : ""
-const halsss = await participantts.filter(v => v.id.endsWith('.net')).map(v => v.id)
-global.tekspushkonv2 = text
-if (isContacts) return
-for (let men of halsss) {
-contacts.push(men)
-fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
-if (/image/.test(mime)) {
-media = await Line.downloadAndSaveMediaMessage(quoted)
-mem = await uptotelegra(media)
-await Line.sendMessage(men, { image: { url: mem }, caption: global.tekspushkonv2 })
-await sleep(3000)
-} else {
-await Line.sendMessage(men, { text: global.tekspushkonv2 })
-await sleep(3000)
-}}
-m.reply('File kontak sudah di kirim lewat chat pribadi!')
-try {
-const uniqueContacts = [...new Set(contacts)];
-const vcardContent = uniqueContacts.map((contact, index) => {
-const vcard = [
-"BEGIN:VCARD",
-"VERSION:3.0",
-`FN:thomz[${createSerial(1)}] ${contact.split("@")[0]}`,
-`TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
-"END:VCARD",
-"", ].join("\n");
-return vcard; }).join("");
-fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
-} catch (err) {
-m.reply(util.format(err))
-} finally {
-await Line.sendMessage(m.sender, { document: fs.readFileSync("./data/contacts.vcf"), fileName: "contacts.vcf", caption: "Pencet file di atas lalu save", mimetype: "text/vcard", }, {quoted: m })
-contacts.splice(0, contacts.length)
-fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
-}
+  if (!isOwner) return onlyOwn()
+  if (!m.isGroup) return onlyGrup()
+  if (!text) return m.reply(`Contoh: ${p_c} teks`)
+  await loading()
+  const groupMetadata = m.isGroup ? await Line.groupMetadata(from).catch(e => {}) : ""
+  const groupOwner = m.isGroup ? groupMetadata.owner : ""
+  const participantts = m.isGroup ? await groupMetadata.participants : ""
+  const halsss = await participantts.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  global.tekspushkonv2 = text
+  if (isContacts) return
+  for (let men of halsss) {
+    contacts.push(men)
+    fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
+    if (/image/.test(mime)) {
+      media = await Line.downloadAndSaveMediaMessage(quoted)
+      mem = await uptotelegra(media)
+      await Line.sendMessage(men, {
+        image: {
+          url: mem
+        },
+        caption: global.tekspushkonv2
+      })
+      await sleep(3000)
+    } else {
+      await Line.sendMessage(men, {
+        text: global.tekspushkonv2
+      })
+      await sleep(3000)
+    }
+  }
+  m.reply('File kontak sudah di kirim lewat chat pribadi!')
+  try {
+    const uniqueContacts = [...new Set(contacts)];
+    const vcardContent = uniqueContacts.map((contact, index) => {
+      const vcard = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:thomz[${createSerial(1)}] ${contact.split("@")[0]}`,
+        `TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
+        "END:VCARD",
+        "",
+      ].join("\n");
+      return vcard;
+    }).join("");
+    fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
+  } catch (err) {
+    m.reply(util.format(err))
+  } finally {
+    await Line.sendMessage(m.sender, {
+      document: fs.readFileSync("./data/contacts.vcf"),
+      fileName: "contacts.vcf",
+      caption: "Pencet file di atas lalu save",
+      mimetype: "text/vcard",
+    }, {
+      quoted: m
+    })
+    contacts.splice(0, contacts.length)
+    fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
+  }
 }
 break
 
 case 'pushkontakidjd': {
-if (!isOwner) return onlyOwn()
-if (!text) return m.reply(`Contoh: ${prefix+command} idgroup|jeda|Teks`)
-await loading()
-const groupMetadataa = !m.isGroup? await Line.groupMetadata(`${q.split("|")[0]}`).catch(e => {}) : ""
-const participantss = !m.isGroup? await groupMetadataa.participants : ""
-const lalu = await participantss.filter(v => v.id.endsWith('.net')).map(v => v.id)
-global.tekspushkonv3 = q.split("|")[2]
-for (let mem of lalu) {
-if (/image/.test(mime)) {
-media = await Line.downloadAndSaveMediaMessage(quoted)
-memk = await uptotelegra(media)
-await Line.sendMessage(men, { image: { url: mem }, caption: global.tekspushkonv3 })
-await sleep(q.split("|")[1])
-} else {
-await Line.sendMessage(mem, { text: global.tekspushkonv3 })
-await sleep(q.split("|")[1])
-}}
-m.reply('Berhasil pushkontak!')
+  if (!isOwner) return onlyOwn()
+  if (!text) return m.reply(`Contoh: ${p_c} idgroup|jeda|Teks`)
+  await loading()
+  const groupMetadataa = !m.isGroup ? await Line.groupMetadata(`${q.split("|")[0]}`).catch(e => {}) : ""
+  const participantss = !m.isGroup ? await groupMetadataa.participants : ""
+  const lalu = await participantss.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  global.tekspushkonv3 = q.split("|")[2]
+  for (let mem of lalu) {
+    if (/image/.test(mime)) {
+      media = await Line.downloadAndSaveMediaMessage(quoted)
+      memk = await uptotelegra(media)
+      await Line.sendMessage(men, {
+        image: {
+          url: mem
+        },
+        caption: global.tekspushkonv3
+      })
+      await sleep(q.split("|")[1])
+    } else {
+      await Line.sendMessage(mem, {
+        text: global.tekspushkonv3
+      })
+      await sleep(q.split("|")[1])
+    }
+  }
+  m.reply('Berhasil pushkontak!')
 }
 break
 
 case 'pushkontakgcjd': {
-if (!isOwner) return onlyOwn()
-if (!isGroup) return onlyGrup()
-if (!text) return m.reply(`Contoh: ${prefix+command} jeda|teks`)
-await loading()
-const halsss = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
-global.tekspushkonv4 = text.split("|")[1]
-for (let men of halsss) {
-if (/image/.test(mime)) {
-media = await Line.downloadAndSaveMediaMessage(quoted)
-mem = await uptotelegra(media)
-await Line.sendMessage(men, { image: { url: mem }, caption: global.tekspushkonv4 })
-await sleep(text.split("|")[0])
-} else {
-await Line.sendMessage(men, { text: tekspushkonv4 })
-await sleep(text.split("|")[0])
-}}
-m.reply('Berhasil pushkontak!')
+  if (!isOwner) return onlyOwn()
+  if (!isGroup) return onlyGrup()
+  if (!text) return m.reply(`Contoh: ${p_c} jeda|teks`)
+  await loading()
+  const halsss = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  global.tekspushkonv4 = text.split("|")[1]
+  for (let men of halsss) {
+    if (/image/.test(mime)) {
+      media = await Line.downloadAndSaveMediaMessage(quoted)
+      mem = await uptotelegra(media)
+      await Line.sendMessage(men, {
+        image: {
+          url: mem
+        },
+        caption: global.tekspushkonv4
+      })
+      await sleep(text.split("|")[0])
+    } else {
+      await Line.sendMessage(men, {
+        text: tekspushkonv4
+      })
+      await sleep(text.split("|")[0])
+    }
+  }
+  m.reply('Berhasil pushkontak!')
 }
 break
 
 case 'savecontact': {
-if (!isOwner) return onlyGrup()
-if (!text) return m.reply(`Contoh: ${prefix+command} idgrup`)
-vreact()
-const groupMetadataa = !isGroup? await Line.groupMetadata(`${text}`).catch(e => {}) : ""
-const participants = !isGroup? await groupMetadataa.participants : ""
-const lalu = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
-for (let mem of lalu) {
-if (isContacts) return
-contacts.push(mem)
-fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))}
-try {
-const uniqueContacts = [...new Set(contacts)];
-const vcardContent = uniqueContacts.map((contact, index) => {
-const vcard = [
-"BEGIN:VCARD",
-"VERSION:3.0",
-`FN:WA[${createSerial(2)}] ${contact.split("@")[0]}`,
-`TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
-"END:VCARD",
-"", ].join("\n");
-return vcard; }).join("");
-fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
-} catch (err) {
-m.reply(util.format(err))
-} finally {
-await Line.sendMessage(from, { document: fs.readFileSync("./data/contacts.vcf"), fileName: "contacts.vcf", caption: "Sukses, tinggal save ya kak", mimetype: "text/vcard", }, { quoted: m })
-contacts.splice(0, contacts.length)
-fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
-}}
+  if (!isOwner) return onlyGrup()
+  if (!text) return m.reply(`Contoh: ${p_c} idgrup`)
+  vreact()
+  const groupMetadataa = !isGroup ? await Line.groupMetadata(`${text}`).catch(e => {}) : ""
+  const participants = !isGroup ? await groupMetadataa.participants : ""
+  const lalu = await participants.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  for (let mem of lalu) {
+    if (isContacts) return
+    contacts.push(mem)
+    fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
+  }
+  try {
+    const uniqueContacts = [...new Set(contacts)];
+    const vcardContent = uniqueContacts.map((contact, index) => {
+      const vcard = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:WA[${createSerial(2)}] ${contact.split("@")[0]}`,
+        `TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
+        "END:VCARD",
+        "",
+      ].join("\n");
+      return vcard;
+    }).join("");
+    fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
+  } catch (err) {
+    m.reply(util.format(err))
+  } finally {
+    await Line.sendMessage(from, {
+      document: fs.readFileSync("./data/contacts.vcf"),
+      fileName: "contacts.vcf",
+      caption: "Sukses, tinggal save ya kak",
+      mimetype: "text/vcard",
+    }, {
+      quoted: m
+    })
+    contacts.splice(0, contacts.length)
+    fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
+  }
+}
 break
 
 case 'savecontact2': {
-if (!isOwner) return onlyOwn()
-if (!m.isGroup) return onlyGrup()
-vreact()
-const groupmetadata = isGroup? await Line.groupMetadata(from).catch(e => {}) : ""
-const groupCreator = isGroup? groupmetadata.Creator : ""
-const participantts = isGroup? await groupmetadata.participants : ""
-const halsss = await participantts.filter(v => v.id.endsWith('.net')).map(v => v.id)
-for (let men of halsss) {
-if (isContacts) return
-contacts.push(men)
-fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
+  if (!isOwner) return onlyOwn()
+  if (!m.isGroup) return onlyGrup()
+  vreact()
+  const groupmetadata = m.isGroup ? await Line.groupMetadata(from).catch(e => {}) : ""
+  const groupCreator = m.isGroup ? groupmetadata.Creator : ""
+  const participantts = m.isGroup ? await groupmetadata.participants : ""
+  const halsss = await participantts.filter(v => v.id.endsWith('.net')).map(v => v.id)
+  for (let men of halsss) {
+    if (isContacts) return
+    contacts.push(men)
+    fs.writeFileSync('./data/contacts.json', JSON.stringify(contacts))
+  }
+  m.reply("Sukses, file sudah dikirim lewat privat chat")
+  try {
+    const uniqueContacts = [...new Set(contacts)];
+    const vcardContent = uniqueContacts.map((contact, index) => {
+      const vcard = [
+        "BEGIN:VCARD",
+        "VERSION:3.0",
+        `FN:${pushname}`,
+        `TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
+        "END:VCARD",
+        "",
+      ].join("\n");
+      return vcard;
+    }).join("");
+    fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
+  } catch (err) {
+    m.reply(util.format(err))
+  } finally {
+    await Line.sendMessage(senderr, {
+      document: fs.readFileSync("./data/contacts.vcf"),
+      fileName: "contacts.vcf",
+      caption: "Sukses, tinggal save ya kak",
+      mimetype: "text/vcard",
+    }, {
+      quoted: m
+    })
+    contacts.splice(0, contacts.length)
+    fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
+  }
 }
-m.reply("Sukses, file sudah dikirim lewat privat chat")
-try {
-const uniqueContacts = [...new Set(contacts)];
-const vcardContent = uniqueContacts.map((contact, index) => {
-const vcard = [
-"BEGIN:VCARD",
-"VERSION:3.0",
-`FN:${pushname}`,
-`TEL;type=CELL;type=VOICE;waid=${contact.split("@")[0]}:+${contact.split("@")[0]}`,
-"END:VCARD",
-"", ].join("\n");
-return vcard; }).join("");
-fs.writeFileSync("./data/contacts.vcf", vcardContent, "utf8");
-} catch (err) {
-m.reply(util.format(err))
-} finally {
-await Line.sendMessage(senderr, { document: fs.readFileSync("./data/contacts.vcf"), fileName: "contacts.vcf", caption: "Sukses, tinggal save ya kak", mimetype: "text/vcard", }, { quoted: m })
-contacts.splice(0, contacts.length)
-fs.writeFileSync("./data/contacts.json", JSON.stringify(contacts))
-}}
 break
 
 case 'save': {
-if (!isOwner) return onlyOwn()
-let q = text.split('|');
-if (q.length < 2) return m.reply(`Contoh: ${prefix+command} nama|nomer`)
-let users = m.mentionedJid[1] ? m.mentionedJid[1] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
-let name = q[0];
-let phoneNumber = users.replace(/[^0-9]/g, '');
-if (phoneNumber.length === 11 && phoneNumber.startsWith('0')) {
-phoneNumber = '' + phoneNumber.substr(1);
-} else if (phoneNumber.length === 12 && phoneNumber.startsWith('00')) {
-phoneNumber = phoneNumber.substr(2);
-} else if (phoneNumber.length === 13 && phoneNumber.startsWith('+')) {
-phoneNumber = phoneNumber.substr(1);
-} else if (phoneNumber.length === 10) {
-phoneNumber = '' + phoneNumber;
-}
-phoneNumber = '' + phoneNumber;
-const uniqueContacts = [phoneNumber];
-let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;type=CELL;type=VOICE;waid=${uniqueContacts}:+${uniqueContacts}\nEND:VCARD`
-await Line.sendMessage(m.chat, { contacts: { displayName: name, contacts: [{ vcard }] }}, { quoted: m })
-m.reply(`Berhasil save nomor kamu, Svb ${ownername}`)
+  if (!isOwner) return onlyOwn()
+  let q = text.split('|');
+  if (q.length < 2) return m.reply(`Contoh: ${p_c} nama|nomer`)
+  let users = m.mentionedJid[1] ? m.mentionedJid[1] : m.quoted ? m.quoted.sender : text.replace(/[^0-9]/g, '') + '@s.whatsapp.net';
+  let name = q[0];
+  let phoneNumber = users.replace(/[^0-9]/g, '');
+  if (phoneNumber.length === 11 && phoneNumber.startsWith('0')) {
+    phoneNumber = '' + phoneNumber.substr(1);
+  } else if (phoneNumber.length === 12 && phoneNumber.startsWith('00')) {
+    phoneNumber = phoneNumber.substr(2);
+  } else if (phoneNumber.length === 13 && phoneNumber.startsWith('+')) {
+    phoneNumber = phoneNumber.substr(1);
+  } else if (phoneNumber.length === 10) {
+    phoneNumber = '' + phoneNumber;
   }
+  phoneNumber = '' + phoneNumber;
+  const uniqueContacts = [phoneNumber];
+  let vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${name}\nTEL;type=CELL;type=VOICE;waid=${uniqueContacts}:+${uniqueContacts}\nEND:VCARD`
+  await Line.sendMessage(m.chat, {
+    contacts: {
+      displayName: name,
+      contacts: [{
+        vcard
+      }]
+    }
+  }, {
+    quoted: m
+  })
+  m.reply(`Berhasil save nomor kamu, Svb ${ownername}`)
+}
 break
 
 case 'cekidgc': {
-if (!isOwner) return onlyOwn()
-let getGroups = await Line.groupFetchAllParticipating()
-let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
-let anu = groups.map((v) => v.id)
-let teks = `${monospace("LIST  GRUP")}\n\nTotal grup: ${anu.length} Grup\n\n`
-for (let x of anu) {
-let metadata2 = await Line.groupMetadata(x)
-teks += `- Nama: ${metadata2.subject}\n- ID: ${metadata2.id}\n- Member: ${metadata2.participants.length}\n\n`
-}
-m.reply(teks)
+  if (!isOwner) return onlyOwn()
+  let getGroups = await Line.groupFetchAllParticipating()
+  let groups = Object.entries(getGroups).slice(0).map((entry) => entry[1])
+  let anu = groups.map((v) => v.id)
+  let teks = `${monospace("LIST  GRUP")}\n\nTotal grup: ${anu.length} Grup\n\n`
+  for (let x of anu) {
+    let metadata2 = await Line.groupMetadata(x)
+    teks += `- Nama: ${metadata2.subject}\n- ID: ${metadata2.id}\n- Member: ${metadata2.participants.length}\n\n`
+  }
+  m.reply(teks)
 }
 break
 
 case 'listgc': {
-if (!isOwner) return onlyOwn()
-let anu = await store.chats.all().filter(v => v.id.endsWith('@g.us')).map(v => v.id)
-let tekslistgc = `${monospace("LIST GRUP CHAT")}\n`
-tekslistgc += `Total: ${anu.length}\n\n`
-for (let e of anu) {
-let metadata = await Line.groupMetadata(e)
-tekslistgc += `Nama: ${metadata.subject}\n`
-tekslistgc += `Owner: ${metadata.owner !== undefined ? '@' + metadata.owner.split`@`[0] : 'Tidak diketahui'}\n`
-tekslistgc += `ID: ${metadata.id}\n`
-tekslistgc += `Dibuat: ${moment(metadata.creation * 1000).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm:ss')}\n`
-tekslistgc += `Member: ${metadata.participants.length}\n\n\n`
+  if (!isOwner) return onlyOwn()
+  if (!store.chats || typeof store.chats.all !== 'function') {
+    return m.reply('Data chats tidak tersedia, pastikan store sudah terinisialisasi')
+  }
+
+  let anu = store.chats.all()
+    .filter(v => v.id.endsWith('@g.us'))
+    .map(v => v.id)
+
+  if (!anu.length) {
+    return m.reply('Tidak ada grup yang terdeteksi')
+  }
+
+  let tekslistgc = `${monospace("LIST GRUP CHAT")}\n`
+  tekslistgc += `Total: ${anu.length}\n\n`
+  
+  for (let e of anu) {
+    let metadata = await Line.groupMetadata(e).catch(_ => null)
+    if (!metadata) continue
+    tekslistgc += `Nama: ${metadata.subject}\n`
+    tekslistgc += `Owner: ${metadata.owner !== undefined ? '@' + metadata.owner.split`@`[0] : 'Tidak diketahui'}\n`
+    tekslistgc += `ID: ${metadata.id}\n`
+    tekslistgc += `Dibuat: ${moment(metadata.creation * 1000).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm:ss')}\n`
+    tekslistgc += `Member: ${metadata.participants.length}\n\n\n`
+  }
+
+  m.reply(tekslistgc)
 }
-m.reply(tekslistgc)
+break
+// === PPOB Indonesia
+
+case 'topup-dana': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/topup-dana?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat menproses pembayaran')
+  }
+}
+break
+
+case 'topup-gopay': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/topup-gopay?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat menproses pembayaran')
+  }
+}
+break
+
+case 'topup-ovo': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/topup-ovo?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKedaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'pulsa-axis': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/pulsa-axis?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'pulsa-indosat': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/pulsa-indosat?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'pulsa-tsel': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/pulsa-telkomsel?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'pulsa-tri': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/pulsa-tri?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'pulsa-xl': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/pulsa-xl?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
+}
+break
+
+case 'tshopeepay': {
+  let [nomor, total] = text.split`|`
+  if (!text) return m.reply(`Contoh: ${p_c} 08xx|10000`)
+  m.reply('Memproses pembayaran...')
+  try {
+    let res = await fetchJson(`https://api.neoxr.eu/api/topup-shopeepay?number=${nomor ? nomor : ''}&amount=${total ? total : ''}&apikey=${neoxrapi}`)
+    if (res.status && res.data) {
+      let hasil = res.data
+      let buffer = Buffer.from(hasil.qr_image, 'base64')
+      await Line.sendMessage(m.chat, {
+        image: buffer,
+        caption: `ID Transaksi: ${hasil.id}\nNomor: ${hasil.number}\nJumlah total: ${hasil.price_format}\nKadaluwarsa pada: ${hasil.expired_at}`
+      }, {
+        quoted: m
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan saat memproses pembayaran')
+  }
 }
 break
 
@@ -13975,20 +14547,26 @@ m.reply('Terjadi kesalahan saat mengambil video')
 break
 
 case 'spotify': {
-if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-if (!text.includes('spotify.com', 'open.spotify')) return m.reply('Harus berupa link spotify!')
-try {
-vreact()
-const spotify = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${text}`)
-const details = `• *Judul:* ${spotify.result.title}\n• *Artis:* ${spotify.result.artists}\n• *Rilis:* ${spotify.result.releaseDate}`
-Line.sendMessage(m.chat, {
-audio: { url: spotify.result.music },
-mimetype: 'audio/mpeg',
-caption: details,
-ptt: false }, { quoted: m })
-} catch (err) {
-m.reply('Terjadi kesalahan: '+err)
-}}
+  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+  if (!text.includes('spotify.com', 'open.spotify')) return m.reply('Harus berupa link spotify!')
+  try {
+    vreact()
+    const spotify = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${Enc(text)}`)
+    const details = `• *Judul:* ${spotify.result.title}\n• *Artis:* ${spotify.result.artists}\n• *Rilis:* ${spotify.result.releaseDate}`
+    Line.sendMessage(m.chat, {
+      audio: {
+        url: spotify.result.music
+      },
+      mimetype: 'audio/mpeg',
+      caption: details,
+      ptt: false
+    }, {
+      quoted: m
+    })
+  } catch (err) {
+    m.reply('Terjadi kesalahan: ' + err)
+  }
+}
 break
 
 case 'gddl':
@@ -14062,6 +14640,79 @@ m.reply('Terjadi kesalahan')
 }}
 break
 
+case 'dlapk': {
+    if (!text) return m.reply(`Contoh: ${p_c} whatsapp`);
+    try {
+        let loo = await fetchJson(`https://deliriussapi-oficial.vercel.app/download/apk?query=${text}`);
+        let data = loo.data;
+        let teks = `*${data.name.toUpperCase()}*
+Developer: ${data.developer}
+Rilis: ${data.publish}
+Rating: ${(data.stats.rating?.average || 'N/A')}
+Link: ${data.download}`;
+        await Line.sendMessage(m.chat, {
+            document: { url: data.download },
+            mimetype: 'application/vnd.android.package-archive',
+            fileName: `${data.name}.apk`,
+            caption: teks
+        }, { quoted: m });
+    } catch (err) {
+        console.error(err);
+        m.reply(err.toString());
+    }
+}
+break
+
+case 'xvideodl':
+case 'xvidl': {
+  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+  try {
+    let res = await fetchJson(`https://api.agatz.xyz/api/xvideodown?url=${text}`)
+    let ror = res.data
+    let cpt = `*XVIDEO - DOWNLOAD*\n\nJudul: ${kapital(ror.title)}\nViews: ${ror.views}\nLike: ${ror.like_count}\nDislike: ${ror.dislike_count}`
+    await Line.sendMessage(m.chat, {video: {url: ror.url }, caption: cpt }, {quoted: m})
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan')
+  }
+}
+break
+
+case 'xnxxdl':
+case 'xnxdl': {
+  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+  try {
+    let res = await fetchJson(`https://api.agatz.xyz/api/xnxxdown?url=${text}`)
+    let ror = res.data
+    let cpt = `*XVIDEO - DOWNLOAD*\n\nJudul: ${kapital(ror.title)}\nDurasi: ${ror.duration}\nInfo: ${ror.info}`
+    await Line.sendMessage(m.chat, {video: {url: ror.files.low }, caption: cpt }, {quoted: m})
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan')
+  }
+}
+break
+
+case 'pindl': {
+    if (!text) return m.reply(`Contoh: ${p_c} https://pin.it/2Vflx5O`);
+    try {
+        let loo = await fetchJson(`https://deliriussapi-oficial.vercel.app/download/pinterestdl?url=${text}`);
+        let data = loo.data;
+        let teks = `Deskripsi: ${data.description}
+Author: ${data.author_name} (${data.username})
+Sumber: ${data.source}
+Link Download: ${data.download.url}`;
+        await Line.sendMessage(m.chat, {
+            image: { url: data.thumbnail },
+            caption: teks
+        }, { quoted: m });
+    } catch (err) {
+        console.error(err);
+        m.reply(err.toString());
+    }
+}
+break
+
 // === Chatai Menu
 
 case 'ai': 
@@ -14120,7 +14771,7 @@ case 'dimas': {
     const gpt = result.data.result;
     Line.sendMessage(m.chat, {
       audio: {
-        url: `https://api.siputzx.my.id/api/tools/tts?text=${Enc(gpt)}&voice=jv-ID-DimasNeural&rate=0&pitch=0&volume=0`
+        url: `https://api.siputzx.my.id/api/tools/tts?text=${gpt}&voice=jv-ID-DimasNeural&rate=0&pitch=0&volume=0`
       },
       mimetype: 'audio/mpeg',
       ptt: true
@@ -14148,7 +14799,7 @@ case 'sitiai': {
     const gpt = result.data.result;
     Line.sendMessage(m.chat, {
       audio: {
-        url: `https://api.siputzx.my.id/api/tools/tts?text=${Enc(gpt)}&voice=jv-ID-SitiNeural&rate=0&pitch=0&volume=0`
+        url: `https://api.siputzx.my.id/api/tools/tts?text=${gpt}&voice=jv-ID-SitiNeural&rate=0&pitch=0&volume=0`
       },
       mimetype: 'audio/mpeg',
       ptt: true
@@ -14176,7 +14827,7 @@ case 'tuti': {
     const gpt = result.data.result;
     Line.sendMessage(m.chat, {
       audio: {
-        url: `https://api.siputzx.my.id/api/tools/tts?text=${Enc(gpt)}&voice=su-ID-TutiNeural&rate=0&pitch=0&volume=0`
+        url: `https://api.siputzx.my.id/api/tools/tts?text=${gpt}&voice=su-ID-TutiNeural&rate=0&pitch=0&volume=0`
       },
       mimetype: 'audio/mpeg',
       ptt: true
@@ -14204,7 +14855,7 @@ case 'jajang': {
     const gpt = result.data.result;
     Line.sendMessage(m.chat, {
       audio: {
-        url: `https://api.siputzx.my.id/api/tools/tts?text=${Enc(gpt)}&voice=su-ID-JajangNeural&rate=0&pitch=0&volume=0`
+        url: `https://api.siputzx.my.id/api/tools/tts?text=${gpt}&voice=su-ID-JajangNeural&rate=0&pitch=0&volume=0`
       },
       mimetype: 'audio/mpeg',
       ptt: true
@@ -14408,85 +15059,28 @@ case 'gptgo': {
 }
 break
 
-case 'ai3':
-case 'tomas':
-case 'thomas': {
+case 'aisrc': {
   try {
- if (!text) return m.reply(`Contoh: ${prefix+command} hai thomas`);
-
- const prompt = `Nama kamu Thomas dan diciptakan oleh Line, sifat kamu cuek dan dingin. Gunakan bahasa gua dan lu, jawab semua pertanyaan secara singkat: ${text}`;
- const apiUrl = `https://btch.us.kg/prompt/gpt?prompt=${encodeURIComponent(prompt)}&text=${encodeURIComponent(text)}`;
-
- let response = await fetch(apiUrl);
- if (!response.ok) throw new Error('Gagal mengambil data dari API');
- 
- let result = await response.json();
- const gpt = result.result;
- 
- Line.sendMessage(m.chat, {
-audio: { url: `https://ai.xterm.codes/api/text2speech/elevenlabs?text=${encodeURIComponent(gpt)}&key=Fourstore&voice=thomas_shelby` }, 
-mimetype: 'audio/mpeg', 
-ptt: true
- }, { quoted: m });
+    if (!text) return m.reply(`Contoh: ${p_c} hai`);
+    let res = await fetchJson(`https://api.siputzx.my.id/api/ai/yousearch?text=${text}`);
+    m.reply(res.data)
   } catch (err) {
- console.error(err);
- m.reply('Terjadi kesalahan');
+    console.error(err);
+    m.reply('Terjadi kesalahan');
   }
 }
 break
 
-case 'ai4':
-case 'dam':
-case 'adam': {
+case 'aisrc2': {
   try {
- if (!text) return m.reply(`Contoh: ${prefix+command} hai adam`);
-
- const prompt = `Kamu adalah Adam, robot AI pintar yang dibuat oleh Line. Jawablah pertanyaan ini dengan ringkas dan baku: ${text}`;
- const apiUrl = `https://btch.us.kg/prompt/gpt?prompt=${encodeURIComponent(prompt)}&text=${encodeURIComponent(text)}`;
-
- let response = await fetch(apiUrl);
- if (!response.ok) throw new Error('Gagal mengambil data dari API');
- 
- let result = await response.json();
- const gpt = result.result;
- 
- Line.sendMessage(m.chat, {
-audio: { url: `https://ai.xterm.codes/api/text2speech/elevenlabs?text=${encodeURIComponent(gpt)}&key=Fourstore&voice=adam` }, 
-mimetype: 'audio/mpeg', 
-ptt: true
- }, { quoted: m });
+    if (!text) return m.reply(`Contoh: ${p_c} hai`);
+    let res = await fetchJson(`https://deliriussapi-oficial.vercel.app/ia/gptweb?text=${text}`);
+    m.reply(res.data);
   } catch (err) {
- console.error(err);
- m.reply('Terjadi kesalahan');
+    console.error(err);
+    m.reply('Terjadi kesalahan');
   }
-}
-break
-
-case 'ai5':
-case 'boy':
-case 'boboiboy': {
-  try {
- if (!text) return m.reply(`Contoh: ${prefix+command} hai boboiboy`);
-
- const prompt = `Kamu adalah Boboiboy seperti yang ada di kartun televisi. Gunakan bahasa Malaysia yang ada di kartun Boboiboy: ${text}`;
- const apiUrl = `https://btch.us.kg/prompt/gpt?prompt=${encodeURIComponent(prompt)}&text=${encodeURIComponent(text)}`;
-
- let response = await fetch(apiUrl);
- if (!response.ok) throw new Error('Gagal mengambil data dari API');
- 
- let result = await response.json();
- const gpt = result.result;
- 
- Line.sendMessage(m.chat, {
-audio: { url: `https://ai.xterm.codes/api/text2speech/elevenlabs?text=${encodeURIComponent(gpt)}&key=Fourstore&voice=boboiboy` }, 
-mimetype: 'audio/mpeg', 
-ptt: true
- }, { quoted: m });
-  } catch (err) {
- console.error(err);
- m.reply('Terjadi kesalahan');
   }
-}
 break
 
 case 'simi':
@@ -14615,22 +15209,20 @@ break
 
 case 'joko': {
   try {
-    if (!text) return m.reply(`Contoh: ${prefix+command} hai joko`);
+    if (!text) return m.reply(`Contoh: ${p_c} hai joko`);
     
-    let response = await fetch("https://api.apigratis.site/cai/send_message", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
+    const prot = "Kamu berperan, berperilaku dan bersifat sepenuhnya seperti Jokowi yang ada di Indonesia."
+    const apiUrl = await fetchJson(`https://api.agatz.xyz/api/gptlogic?logic=${prot}&p=${text}`)
+    const gpt = apiUrl.data.result
+    Line.sendMessage(m.chat, {
+      audio: {
+        url: `https://aihub.xtermai.xyz/api/text2speech/elevenlabs?text=${gpt}&voice=jokowi&key=Bell409`
       },
-      body: JSON.stringify({
-        external_id: "5GtHMVlZ-45C8dwvxmJ6MIzHxe4vWsoajm5KV7MP0IU",
-        message: text
-      })
+      mimetype: "audio/mpeg",
+      ptt: true
+    }, {
+      quoted: m
     })
-    let result = await response.json()
-    let replyMessage = result.result.replies[0].text
-    m.reply(replyMessage)
-    Line.sendMessage(m.chat, { audio: { url: `https://ai.xterm.codes/api/text2speech/elevenlabs?text=${replyMessage}&key=Fourstore&voice=jokowi` }, mimetype: "audio/mpeg", ptt: true }, { quoted: m })
   } catch (err) {
     console.error(err)
     m.reply('Terjadi kesalahan')
@@ -14639,15 +15231,20 @@ case 'joko': {
 break
 
 case 'bowo': {
-  if (!text) return m.reply(`Contoh: ${prefix+command} hai bowo`)
+  if (!text) return m.reply(`Contoh: ${p_c} hai bowo`)
   try {
-    let response = await fetch(`https://btch.us.kg/ai/c-ai?prompt=Prabowo&text=${encodeURIComponent(text)}`)
-    if (!response.ok) return m.reply('Gagal mendapatkan respons dari API.')
+    let pp = "Kamu berperan sebagai presiden Indonesia yang bernama Prabowo Subianto, sifat dan cara bicara kamu sama seperti diri nya."
+    let response = await fetch(`https://api.agatz.xyz/api/gptlogic?logic=${pp}&p=${text}`)
     let data = await response.json()
-    if (data && data.result) {
-      m.reply(data.result)
-      Line.sendMessage(m.chat, { audio: { url: `https://ai.xterm.codes/api/text2speech/elevenlabs?text=${data.result}&key=Fourstore&voice=prabowo` }, mimetype: "audio/mpeg", ptt: true }, { quoted: m })
-      }
+      Line.sendMessage(m.chat, {
+        audio: {
+          url: `https://aihub.xtermai.xyz/api/text2speech/elevenlabs?text=${data.data.result}&voice=prabowo&key=Bell409`
+        },
+        mimetype: "audio/mpeg",
+        ptt: true
+      }, {
+        quoted: m
+      })
   } catch (err) {
     m.reply('Terjadi kesalahan, coba lagi nanti.')
   }
@@ -15266,22 +15863,26 @@ break
 
 case 'spotifys':
 case 'spotifysearch': {
-    if (!text) return m.reply(`Contoh: ${prefix+command} aku yang tersakiti`)
-    let results = await searchSpotifyTracks(text);
-    if (!results || results.length === 0) return m.reply('Lagu tidak ditemukan.')
-    let firstResult = results[0];
-    let spotifyAPI = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${firstResult.external_urls.spotify}`)    
-    await vreact()
-    let teks = `*SPOTIFY - SEARCH*\n\n`
-    for (let track of results) {
-        teks += `*• Title:* ${track.name}\n`
-        teks += `*• Artist:* ${track.artists.map(artist => artist.name).join(', ')}\n`
-        teks += `*• Link:* ${track.external_urls.spotify}\n\n`
-    }
-    Line.sendMessage(m.chat, {
-        image: { url: spotifyAPI.result.cover },
-        caption: teks
-    }, { quoted: m })
+  if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
+  let results = await searchSpotifyTracks(text);
+  if (!results || results.length === 0) return m.reply('Lagu tidak ditemukan.')
+  let firstResult = results[0];
+  let spotifyAPI = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${firstResult.external_urls.spotify}`)
+  await vreact()
+  let teks = `*SPOTIFY - SEARCH*\n\n`
+  for (let track of results) {
+    teks += `*• Title:* ${track.name}\n`
+    teks += `*• Artist:* ${track.artists.map(artist => artist.name).join(', ')}\n`
+    teks += `*• Link:* ${track.external_urls.spotify}\n\n`
+  }
+  Line.sendMessage(m.chat, {
+    image: {
+      url: spotifyAPI.result.cover
+    },
+    caption: teks
+  }, {
+    quoted: m
+  })
 }
 break
 
@@ -16256,47 +16857,76 @@ reply(gh)
 break
 
 case 'nuliskanan': {
-if (!text) return m.reply(`Contoh: ${prefix+command} Toyaa`)
-try {
-vreact()
-const tulisan = body.slice(11)
-Line.sendMessage(m.chat, {image:{url:`https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${encodeURIComponent(text)}&apikey=${global.onekey}`}, caption: global.wm }, {quoted: m })
-} catch {
-m.reply('Terjadi kesalahan: '+err.toString())
-}}
+  if (!text) return m.reply(`Contoh: ${p_c} toyaa`)
+  try {
+    vreact()
+    Line.sendMessage(m.chat, {
+      image: {
+        url: `https://api.siputzx.my.id/api/m/nulis?text=${text}&name=${db.data.users[m.sender].nama}&class=`
+      },
+      caption: global.wm
+    }, {
+      quoted: m
+    })
+  } catch {
+    m.reply('Terjadi kesalahan: ' + err.toString())
+  }
+}
 break
 
 case 'nuliskiri': {
-if (!text) return m.reply(`Contoh: ${prefix+command} Toyaa`)
-try {
-vreact()
-const tulisan = body.slice(11)
-Line.sendMessage(m.chat, {image:{url:`https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${encodeURIComponent(text)}&apikey=${global.onekey}`}, caption: global.wm }, {quoted: m })
-} catch {
-m.reply('Terjadi kesalahan: '+err.toString())
-}}
+  if (!text) return m.reply(`Contoh: ${p_c} toyaa`)
+  try {
+    vreact()
+    const p = await fetchJson(`https://api.neoxr.eu/api/nulis?text=${text}&apikey=LineS`)
+    Line.sendMessage(m.chat, {
+      image: {
+        url: p.data.url
+      },
+      caption: global.wm
+    }, {
+      quoted: m
+    })
+  } catch {
+    m.reply('Terjadi kesalahan: ' + err.toString())
+  }
+}
 break
 
 case 'foliokanan': {
-if (!text) return m.reply(`Contoh: ${prefix+command} Toyaa`)
-try {
-vreact()
-const tulisan = body.slice(11)
-Line.sendMessage(m.chat, {image:{url:`https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${encodeURIComponent(text)}&apikey=${global.onekey}`}, caption: global.wm }, {quoted: m })
-} catch {
-m.reply('Terjadi kesalahan: '+err.toString())
-}}
+  if (!text) return m.reply(`Contoh: ${p_c} toyaa`)
+  try {
+    vreact()
+    Line.sendMessage(m.chat, {
+      image: {
+        url: `https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${text}&apikey=${global.onekey}`
+      },
+      caption: global.wm
+    }, {
+      quoted: m
+    })
+  } catch {
+    m.reply('Terjadi kesalahan: ' + err.toString())
+  }
+}
 break
 
 case 'foliokiri': {
-if (!text) return m.reply(`Contoh: ${prefix+command} Toyaa`)
-try {
-vreact()
-const tulisan = body.slice(11)
-Line.sendMessage(m.chat, {image:{url:`https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${encodeURIComponent(text)}&apikey=${global.onekey}`}, caption: global.wm }, {quoted: m })
-} catch {
-m.reply('Terjadi kesalahan: '+err.toString())
-}}
+  if (!text) return m.reply(`Contoh: ${p_c} toyaa`)
+  try {
+    vreact()
+    Line.sendMessage(m.chat, {
+      image: {
+        url: `https:\/\/api.zeeoneofc.my.id/api/canvas/${command}?text=${text}&apikey=${global.onekey}`
+      },
+      caption: global.wm
+    }, {
+      quoted: m
+    })
+  } catch {
+    m.reply('Terjadi kesalahan: ' + err.toString())
+  }
+}
 break
 
 case 'beauty': {
@@ -17213,6 +17843,28 @@ m.reply(jsonData)
 } 
 break
 
+case 'steam': {
+   try {
+       if (!text) return m.reply(`Contoh: ${p_c} stickman`)
+       let results = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/steam?query=${text}`)
+
+       if (!Array.isArray(results) || results.length === 0) {
+           return m.reply('Tidak ada hasil ditemukan.')
+       }
+
+       let allResults = results.data.map(kep => {
+           return `Judul: ${kep.title}\nVersi: ${kep.version}\nSize: ${kep.size}\nLink: ${kep.link}\nMod: ${kep.mod}\n`
+       }).join('\n')
+
+       let firstImageUrl = results.data[0].image;
+       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
+   } catch (err) {
+       m.reply('Terjadi kesalahan: ' + err)
+       console.error('Error:', err)
+   }
+}
+break
+
 // === Voice Menu
 
 case 'bass':
@@ -17570,6 +18222,15 @@ case 'listjadibot': {
 }
 break
 
+case 'listjadibot': {
+  if (isOwner && isPremium) {
+    listjadibot(Line, m)
+  } else {
+    m.reply('Fitur khusus owner dan premium!')
+  }
+}
+break
+
 case 'ceknickff': {
 let ffnick = q.split(" ")[0]
 if (!ffnick) return m.reply(`ID FF nya mana?`)
@@ -17728,6 +18389,23 @@ const { remini } = require('./lib/general/scrape')
 let media = await quoted.download()
 let proses = await remini(media, "dehaze");
 Line.sendMessage(m.chat, { image: proses, caption: 'Sukses'}, { quoted: m})
+}
+break
+
+case 'upskala':
+case 'upscaler':
+case 'upscale':
+case 'upscala': {
+  if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${command}`);
+  vreact();
+  let media = await Line.downloadAndSaveMediaMessage(quoted)
+  let url = await uploadToPomf(media)
+  Line.sendMessage(m.chat, {
+    image: {url: `https://api.ryzendesu.vip/api/ai/upscaler?url=${url}` },
+    caption: 'Sukses'
+  }, {
+    quoted: m
+  });
 }
 break
 
@@ -18537,46 +19215,68 @@ case 'txt2imgv2': {
 break
 
 case 'txt2imgv3': {
-  if (!text) return m.reply(`Contoh: ${command} beautiful girl with handsome man`)
-    vreact()
-    await Line.sendMessage(m.chat, {image: {url: `https://btch.us.kg/v4/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
+  if (!text) return m.reply(`Contoh: ${p_c} beautiful girl with handsome man`)
+  vreact()
+  await Line.sendMessage(m.chat, {image: {url: `https://api.ryzendesu.vip/api/ai/v2/text2img?prompt=${text}&model=sd3_5_large` }, caption: wm }, {quoted: m})
 }
 break
 
 case 'txt2imgv4': {
-  if (!text) return m.reply(`Contoh: ${command} beautiful girl with handsome man`)
+  if (!text) return m.reply(`Contoh: ${p_c} beautiful girl with handsome man`)
     vreact()
-    await Line.sendMessage(m.chat, {image: {url: `https://btch.us.kg/v5/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
+    await Line.sendMessage(m.chat, {image: {url: `https://api.ryzendesu.vip/api/ai/v2/text2img?prompt=${text}&model=dalle` }, caption: wm }, {quoted: m})
 }
 break
 
 case 'txt2imgv5': {
-if (!args.length) return reply("Silakan masukkan teks untuk diubah menjadi gambar.");
-const textInput = encodeURIComponent(args.join(" "));
-const apiUrl = `https://btch.us.kg/v5/text2img?text=${textInput}`;
-try {
-const response = await axios.get(apiUrl, { responseType: 'arraybuffer' });
-const imgBuffer = Buffer.from(response.data, 'binary');
-await Line.sendMessage(from, { image: imgBuffer, caption: `Hasil gambar untuk: "${args.join(" ")}"` }, { quoted: m });
-} catch (error) {
-console.error(error);
-reply("Maaf, terjadi kesalahan saat memproses permintaan Anda.");
-}
+  if (!text) return m.reply(`Contoh: ${p_c} beautiful girl with handsome man`)
+    vreact()
+    let io = await fetchJson(`https://itzpire.com/ai/animediff2?prompt=${text}`)
+    await Line.sendMessage(m.chat, {image: {url: io.result }, caption: wm }, {quoted: m})
 }
 break
 
 case 'txt2imgv6': {
-if (!args.length) return reply("Silakan masukkan teks untuk diubah menjadi gambar.");
-const teks = encodeURIComponent(args.join(" "));
-const apiUrl = `https://btch.us.kg/v6/text2img?text=${teks}`;
-try {
-const response = await axios.get(apiUrl, { responseType: 'arraybuffer' });
-const imgBuffer = Buffer.from(response.data, 'binary');
-await Line.sendMessage(from, { image: imgBuffer, caption: `Hasil gambar untuk: "${args.join(" ")}"` }, { quoted: m });
-} catch (error) {
-console.error(error);
-reply("Maaf, terjadi kesalahan saat memproses permintaan Anda.");
+  if (!text) return m.reply(`Contoh: ${p_c} beautiful girl with handsome man`)
+    vreact()
+    let io = await fetchJson(`https://itzpire.com/ai/3dmodel?prompt=${text}&negative_prompt=Nothing`)
+    await Line.sendMessage(m.chat, {image: {url: io.result }, caption: wm }, {quoted: m})
 }
+break
+
+case 'emojimix': {
+  if (!text.includes('+')) return m.reply(`Contoh: ${p_c} 😂+😭`)
+  let [emoji1, emoji2] = text.split('+')
+  if (!emoji1 || !emoji2) return m.reply(`Contoh: ${p_c} 😂+😭`)
+  try {
+    let res = await fetch(`https://btch.us.kg/emojimix?emoji1=${emoji1}&emoji2=${emoji2}`)
+    let buffer = await res.buffer()
+    await Line.sendImageAsSticker(m.chat, buffer, m, {
+      packname: ``,
+      author: `${author} | ${db.data.users[m.sender].nama}`
+    })
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan')
+  }
+}
+break
+
+case 'attp':
+case 'ttp': {
+  if (!text) return m.reply(`Contoh: ${p_c} hai`)
+  try {
+    let res = await fetch(`https://btch.us.kg/${command}?text=${text}`)
+    if (!res.ok) throw new Error('Gagal mendapatkan respon')
+    let buffer = await res.buffer()
+    await Line.sendImageAsSticker(m.chat, buffer, m, {
+      packname: ``,
+      author: `${author} | ${db.data.users[m.sender].nama}`
+    })
+  } catch (err) {
+    console.error(err)
+    m.reply('Terjadi kesalahan')
+  }
 }
 break
 
@@ -19524,368 +20224,84 @@ break
 
 // === Digital Ocean
 
-case 'vps1g1c': {
-  if (!isOwner) return onlyOwn();
-  
-  let hostname = args[0];
-  if (!hostname) return reply('Masukkan hostname VPS nya!');
-
-  try {
-    let dropletData = {
-      name: hostname,
-      region: 'sgp1',
-      size: 's-1vcpu-1gb', // 1GB RAM, 1 CPU
-      image: 'ubuntu-20-04-x64',
-      ssh_keys: null,
-      backups: false,
-      ipv6: true,
-      user_data: null,
-      private_networking: null,
-      volumes: null,
-      tags: ['T']
-    };
-
-    let password = generateRandomPassword();
-    dropletData.user_data = `#cloud-config
-password: ${password}
-chpasswd: { expire: False }`;
-
-    let response = await fetch('https://api.digitalocean.com/v2/droplets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + doToken
-      },
-      body: JSON.stringify(dropletData)
-    });
-
-    let responseData = await response.json();
-
-    if (response.ok) {
-      let dropletConfig = responseData.droplet;
-      let dropletId = dropletConfig.id;
-
-      reply(`Tunggu Sebentar...`);
-      await new Promise(resolve => setTimeout(resolve, 60000));
-
-      let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + doToken
-        }
-      });
-
-      let dropletInfo = await dropletResponse.json();
-      let ipVPS = dropletInfo.droplet.networks.v4 && dropletInfo.droplet.networks.v4.length > 0 
-                  ? dropletInfo.droplet.networks.v4[0].ip_address 
-                  : "Tidak ada alamat IP yang tersedia!";
-
-      let messageText = `VPS berhasil dibuat!\n\n`;
-      messageText += `ID: ${dropletId}\n`;
-      messageText += `IP VPS: ${ipVPS}\n`;
-      messageText += `Password: ${password}\n`;
-
-      await Line.sendMessage(m.chat, { text: messageText }, {quoted: m});
-    } else {
-      throw new Error(`Gagal membuat VPS: ${responseData.message}`);
-    }
-  } catch (err) {
-    console.error(err);
-    reply(`Terjadi kesalahan saat membuat VPS: ${err.message || err}`);
-  }
+case "vps-1gb": case "vps-2gb1": case "vps-2gb2": case "vps-4gb": case "vps-8gb": case "vps-16gb": {
+if (!isOwner) return reply('Fitur khusus owner') 
+if (!text) return Reply(example("hostname,password"))
+let [hostname, password] = text.split(",");
+if (!hostname || !password) return Reply(example("hostname,password"));
+hostname = hostname.toLowerCase().trim();
+password = password.trim();
+if (!hostname.match(/^[a-zA-Z0-9-]+$/)) {
+return reply("Hostname hanya boleh menggunakan huruf, angka, dan tanda hubung (-).");
 }
-break
-
-case 'vps2g1c': {
-  if (!isOwner) return onlyOwn();
-  
-  let hostname = args[0];
-  if (!hostname) return reply('Masukkan hostname VPS nya!');
-
-  try {
-    let dropletData = {
-      name: hostname,
-      region: 'sgp1',
-      size: 's-1vcpu-2gb', // 2GB RAM, 1 CPU
-      image: 'ubuntu-20-04-x64',
-      ssh_keys: null,
-      backups: false,
-      ipv6: true,
-      user_data: null,
-      private_networking: null,
-      volumes: null,
-      tags: ['T']
-    };
-
-    let password = generateRandomPassword();
-    dropletData.user_data = `#cloud-config
-password: ${password}
-chpasswd: { expire: False }`;
-
-    let response = await fetch('https://api.digitalocean.com/v2/droplets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + doToken
-      },
-      body: JSON.stringify(dropletData)
-    });
-
-    let responseData = await response.json();
-
-    if (response.ok) {
-      let dropletConfig = responseData.droplet;
-      let dropletId = dropletConfig.id;
-
-      reply(`Tunggu Sebentar...`);
-      await new Promise(resolve => setTimeout(resolve, 60000));
-
-      let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + doToken
-        }
-      });
-
-      let dropletInfo = await dropletResponse.json();
-      let ipVPS = dropletInfo.droplet.networks.v4 && dropletInfo.droplet.networks.v4.length > 0 
-                  ? dropletInfo.droplet.networks.v4[0].ip_address 
-                  : "Tidak ada alamat IP yang tersedia!";
-
-      let messageText = `VPS berhasil dibuat!\n\n`;
-      messageText += `ID: ${dropletId}\n`;
-      messageText += `IP VPS: ${ipVPS}\n`;
-      messageText += `Password: ${password}\n`;
-
-      await Line.sendMessage(m.chat, { text: messageText }, {quoted: m});
-    } else {
-      throw new Error(`Gagal membuat VPS: ${responseData.message}`);
-    }
-  } catch (err) {
-    console.error(err);
-    reply(`Terjadi kesalahan saat membuat VPS: ${err.message || err}`);
-  }
+if (password.length < 8) {
+return reply("Password harus memiliki panjang minimal 8 karakter.");
 }
-break
-
-case 'vps4g2c': {
-  if (!isOwner) return onlyOwn();
-  
-  let hostname = args[0];
-  if (!hostname) return reply('Masukkan hostname VPS nya!');
-
-  try {
-    let dropletData = {
-      name: hostname,
-      region: 'sgp1',
-      size: 's-2vcpu-4gb', // 4GB RAM, 2 CPU
-      image: 'ubuntu-20-04-x64',
-      ssh_keys: null,
-      backups: false,
-      ipv6: true,
-      user_data: null,
-      private_networking: null,
-      volumes: null,
-      tags: ['T']
-    };
-
-    let password = generateRandomPassword();
-    dropletData.user_data = `#cloud-config
-password: ${password}
-chpasswd: { expire: False }`;
-
-    let response = await fetch('https://api.digitalocean.com/v2/droplets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + doToken
-      },
-      body: JSON.stringify(dropletData)
-    });
-
-    let responseData = await response.json();
-
-    if (response.ok) {
-      let dropletConfig = responseData.droplet;
-      let dropletId = dropletConfig.id;
-
-      reply(`Tunggu Sebentar...`);
-      await new Promise(resolve => setTimeout(resolve, 60000));
-
-      let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + doToken
-        }
-      });
-
-      let dropletInfo = await dropletResponse.json();
-      let ipVPS = dropletInfo.droplet.networks.v4 && dropletInfo.droplet.networks.v4.length > 0 
-                  ? dropletInfo.droplet.networks.v4[0].ip_address 
-                  : "Tidak ada alamat IP yang tersedia!";
-
-      let messageText = `VPS berhasil dibuat!\n\n`;
-      messageText += `ID: ${dropletId}\n`;
-      messageText += `IP VPS: ${ipVPS}\n`;
-      messageText += `Password: ${password}\n`;
-
-      await Line.sendMessage(m.chat, { text: messageText }, {quoted: m});
-    } else {
-      throw new Error(`Gagal membuat VPS: ${responseData.message}`);
-    }
-  } catch (err) {
-    console.error(err);
-    reply(`Terjadi kesalahan saat membuat VPS: ${err.message || err}`);
-  }
+let region = "sgp1";
+let images;
+switch (command) {
+case "vps-1gb": images = "s-1vcpu-1gb"; break;
+case "vps-2gb1": images = "s-1vcpu-2gb"; break;
+case "vps-2gb2": images = "s-2vcpu-2gb"; break;
+case "vps-4gb": images = "s-2vcpu-4gb"; break;
+case "vps-8gb": images = "s-4vcpu-8gb"; break;
+default: images = "s-4vcpu-16gb-amd"; break;
 }
-break
-
-case 'vps8g4c': {
-  if (!isOwner) return onlyOwn();
-
-  let hostname = args[0];
-  if (!hostname) return reply('Masukkan hostname VPS nya!');
-
-  try {
-    let dropletData = {
-      name: hostname,
-      region: 'sgp1',
-      size: 's-4vcpu-8gb', // 8GB RAM, 4 CPU
-      image: 'ubuntu-20-04-x64',
-      ssh_keys: null,
-      backups: false,
-      ipv6: true,
-      user_data: null,
-      private_networking: null,
-      volumes: null,
-      tags: ['T']
-    };
-
-    let password = generateRandomPassword();
-    dropletData.user_data = `#cloud-config
+let dropletData = {
+name: hostname,
+region: region,
+size: images,
+image: 'ubuntu-20-04-x64',
+backups: false,
+ipv6: true,
+user_data: `#cloud-config
 password: ${password}
-chpasswd: { expire: False }`;
-
-    let response = await fetch('https://api.digitalocean.com/v2/droplets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + doToken
-      },
-      body: JSON.stringify(dropletData)
-    });
-
-    let responseData = await response.json();
-
-    if (response.ok) {
-      let dropletConfig = responseData.droplet;
-      let dropletId = dropletConfig.id;
-
-      reply(`Tunggu Sebentar...`);
-      await new Promise(resolve => setTimeout(resolve, 60000));
-
-      let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + doToken
-        }
-      });
-
-      let dropletInfo = await dropletResponse.json();
-      let ipVPS = dropletInfo.droplet.networks.v4 && dropletInfo.droplet.networks.v4.length > 0 
-                  ? dropletInfo.droplet.networks.v4[0].ip_address 
-                  : "Tidak ada alamat IP yang tersedia!";
-
-      let messageText = `VPS berhasil dibuat!\n\n`;
-      messageText += `ID: ${dropletId}\n`;
-      messageText += `IP VPS: ${ipVPS}\n`;
-      messageText += `Password: ${password}\n`;
-
-      await Line.sendMessage(m.chat, { text: messageText }, {quoted: m});
-    } else {
-      throw new Error(`Gagal membuat VPS: ${responseData.message}`);
-    }
-  } catch (err) {
-    console.error(err);
-    reply(`Terjadi kesalahan saat membuat VPS: ${err.message || err}`);
-  }
+chpasswd: { expire: False }
+ssh_pwauth: True`,
+private_networking: null,
+volumes: null,
+tags: ['T']
+};
+try {
+console.log("Request Payload:", dropletData);
+let response = await fetch('https://api.digitalocean.com/v2/droplets', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+'Authorization': "Bearer " + global.apiDigitalOcean
+},
+body: JSON.stringify(dropletData)
+});
+let responseData = await response.json();
+console.log("Response Status:", response.status);
+console.log("Response Body:", responseData);
+if (!response.ok) {
+return reply(`Gagal membuat VPS. Pesan error: ${responseData.message || "Tidak diketahui"}`);
 }
-break
-
-case 'vps16g4c': {
-  if (!isOwner) return onlyOwn();
-
-  let hostname = args[0];
-  if (!hostname) return reply('Masukkan hostname VPS nya!');
-
-  try {
-    let dropletData = {
-      name: hostname,
-      region: 'sgp1',
-      size: 's-4vcpu-16gb', // 16GB RAM, 4 CPU
-      image: 'ubuntu-20-04-x64',
-      ssh_keys: null,
-      backups: false,
-      ipv6: true,
-      user_data: null,
-      private_networking: null,
-      volumes: null,
-      tags: ['T']
-    };
-
-    let password = generateRandomPassword();
-    dropletData.user_data = `#cloud-config
-password: ${password}
-chpasswd: { expire: False }`;
-
-    let response = await fetch('https://api.digitalocean.com/v2/droplets', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': "Bearer " + doToken
-      },
-      body: JSON.stringify(dropletData)
-    });
-
-    let responseData = await response.json();
-
-    if (response.ok) {
-      let dropletConfig = responseData.droplet;
-      let dropletId = dropletConfig.id;
-
-      reply(`Tunggu Sebentar...`);
-      await new Promise(resolve => setTimeout(resolve, 60000));
-
-      let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': "Bearer " + doToken
-        }
-      });
-
-      let dropletInfo = await dropletResponse.json();
-      let ipVPS = dropletInfo.droplet.networks.v4 && dropletInfo.droplet.networks.v4.length > 0 
-                  ? dropletInfo.droplet.networks.v4[0].ip_address 
-                  : "Tidak ada alamat IP yang tersedia!";
-
-      let messageText = `VPS berhasil dibuat!\n\n`;
-      messageText += `ID: ${dropletId}\n`;
-      messageText += `IP VPS: ${ipVPS}\n`;
-      messageText += `Password: ${password}\n`;
-
-      await Line.sendMessage(m.chat, { text: messageText }, {quoted: m});
-    } else {
-      throw new Error(`Gagal membuat VPS: ${responseData.message}`);
-    }
-  } catch (err) {
-    console.error(err);
-    reply(`Terjadi kesalahan saat membuat VPS: ${err.message || err}`);
-  }
+let dropletId = responseData.droplet.id;
+await m.reply("Memproses pembuatan VPS... Perkiraan 1-5 menit.");
+await new Promise(resolve => setTimeout(resolve, 60000));
+let dropletResponse = await fetch(`https://api.digitalocean.com/v2/droplets/${dropletId}`, {
+method: 'GET',
+headers: {
+'Authorization': "Bearer " + global.apiDigitalOcean
+}
+});
+let dropletDetails = await dropletResponse.json();
+let ipVPS = dropletDetails.droplet.networks.v4[0]?.ip_address || "Tidak ada alamat IP.";
+let messageText = `VPS berhasil dibuat!
+🛜 ID DROPLET : ${dropletId}
+⚙️ IP VPS : ${ipVPS}
+📛 Username : root
+🗝️ Password : ${password}`;
+console.log("Mengirim pesan ke chat:", m.chat);
+console.log("Isi pesan:", messageText);
+await Line.sendMessage(m.chat, { text: messageText });
+console.log("Pesan berhasil dikirim.");
+} catch (err) {
+console.error("Error:", err);
+reply("Terjadi kesalahan: " + err.message);
+}
 }
 break
 
