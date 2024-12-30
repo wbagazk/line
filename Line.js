@@ -16322,16 +16322,15 @@ case 'ytsearch': {
     if (!text) return reply(`Contoh : ${prefix + command} story wa anime`);
     vreact();
     try {
-        let res = await fetch(`https://lineaja.my.id/api/search/yt?q=${encodeURIComponent(text)}`);
-        let json = await res.json();
+        const result = await search(text); 
 
-        if (!json.status || !json.data || json.data.length === 0) {
+        if (!result || result.videos.length === 0) {
             return reply('Tidak ditemukan video yang relevan.');
         }
 
-        let uii = json.data;
+        const uii = result.videos;
         let ytscard = [];
-        let teks = `\n${uii[0].title}\n\n*Video ID:* ${uii[0].url.split('v=')[1]}\n*Views:* ${uii[0].views}\n*Duration:* ${uii[0].duration}\n*Upload At:* ${uii[0].author}\n\n`;
+        let teks = `\n${uii[0].title}\n\n*Video ID:* ${uii[0].videoId}\n*Views:* ${uii[0].views}\n*Duration:* ${uii[0].duration}\n*Upload At:* ${uii[0].author.name}\n\n`;
 
         let no = 1;
         for (let i of uii) {
@@ -16341,13 +16340,13 @@ case 'ytsearch': {
                     rows: [
                         {
                             header: `[ ${i.duration} ] Download Audio`,
-                            title: `ID: ${i.url.split('v=')[1]}`,
+                            title: `ID: ${i.videoId}`,
                             description: `Link: ${i.url}`,
                             id: `.audio ${i.url}`,
                         },
                         {
                             header: `[ ${i.duration} ] Download Video`,
-                            title: `ID: ${i.url.split('v=')[1]}`,
+                            title: `ID: ${i.videoId}`,
                             description: `Link: ${i.url}`,
                             id: `.video ${i.url}`,
                         }
@@ -16356,7 +16355,6 @@ case 'ytsearch': {
             }
         }
 
-        // Menyiapkan button
         let button = [
             {
                 "name": "single_select",
@@ -16364,7 +16362,6 @@ case 'ytsearch': {
             }
         ];
 
-        // Mendapatkan thumbnail dan mengirim pesan
         let buffer = await getBuffer(uii[0].thumbnail);
         Line.sendButtonImage(m.chat, "*乂 YOUTUBE SEARCH*", teks, buffer, button, m);
 
@@ -16379,29 +16376,40 @@ case 'play': {
   if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
   try {
     vreact()
-    let res = await fetch(`https://lineaja.my.id/api/search/yt?q=${encodeURIComponent(text)}`)
-    let json = await res.json()
-    
-    if (!json.status || !json.data.length) return m.reply('Tidak ditemukan hasil.')
-    
-    const { title, url, author, duration, thumbnail } = json.data[0]
+    const results = await search(text)
+    const { title, url, author, duration, thumbnail } = results.videos[0] 
     const body = `• Judul: ${title}\n` +
       `• Channel: ${author}\n` +
       `• Durasi: ${duration}\n` +
-      `• Link: ${url}\n\nKetik .video tuk vidio\nKetik .audio tuk audio`
-      
+      `• Link: ${url}`
+
     let buffer = await getBuffer(thumbnail)
+
+    let ytscard = [{
+      title: 'Pilih Opsi:',
+      rows: [
+        {
+          header: '[Video] Download Video',
+          title: `ID: ${url.split('v=')[1]}`,
+          description: `Link: ${url}`,
+          id: `.viedo ${url}`
+        },
+        {
+          header: '[Audio] Download Audio',
+          title: `ID: ${url.split('v=')[1]}`,
+          description: `Link: ${url}`,
+          id: `.audio ${url}`
+        }
+      ]
+    }];
+
     let button = [
-       {
-          "name": "quick_reply",
-          "buttonParamsJson": `{\"display_text\":\"Video\",\"id\":\".video ${url}\"}`
-       },
-       {
-          "name": "quick_reply",
-          "buttonParamsJson": `{\"display_text\":\"Audio\",\"id\":\".audio ${url}\"}`
-       }
-    ]
-    
+      {
+        "name": "single_select",
+        "buttonParamsJson": `{\n  title: 'Youtube Opsi',\n  sections: ${JSON.stringify(ytscard)}\n}`
+      }
+    ];
+
     Line.sendButtonImage(m.chat, `YOUTUBE - PLAY\n`, body, buffer, button, m)
   } catch (err) {
     m.reply(`Terjadi kesalahan: ${err.message}`)
