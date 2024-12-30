@@ -1,12 +1,5 @@
 require('./lib/settings/settings')
-const { 
-BufferJSON, 
-generateWAMessageFromContent, 
-generateWAMessage, 
-prepareWAMessageMedia, 
-downloadContentFromMessage,
-InteractiveMessage,
-proto, delay
+const { generateWAMessageFromContent, generateWAMessage, prepareWAMessageMedia, downloadContentFromMessage,InteractiveMessage, proto, delay
 } = require('@whiskeysockets/baileys')
 const axios = require('axios')
 const { Client } = require('ssh2')
@@ -52,7 +45,7 @@ let sewa = JSON.parse(fs.readFileSync('./data/sewa.json'))
 
 //==========================
 
-const { ephoto, CarbonifyV1, CarbonifyV2, capcutdl, igdown, twiterdl, snapsave, GDriveDl, snapsavev2, mediafireDl, getMimeType, ssweb, tiktokSearchVideo, searchSpotifyTracks, pinterest, uploadToPomf, uploadToCdn, UploadFileUgu, toBase64, toOriginal, obfusc, deobfusc, toGhRaw, toGhOri, toFont, kapital, obfus1, obfus2, autoLevelUp, getprodukDariFile, simpenProduknya, getidProduk, cekProduknye, addprodukzz, delprodukzz, updprodukzz, getprodukdb, simpenSmTr, getSmTr, getTrId, cIdTrnya, saveTrnye, simpenDisc, getDisczz, addDisczz, persenDiskonnya, ngerestokk, bacaData, simpanData, buatPapan, lemparDadu, generateTanggaDanUlar, pindahPosisi, mulaiGame, joinGame, mainGame, hapusGame, cariIdGame, mainGameAuto, hapusGameAuto, getRewards, rapihin, rapihin2, addWm, speedVideo, detekFps, ubahFps, audio2txt, getIPInfo,convertRecords, fetchDNSRecordsFromHackertarget, fetchDNSRecords, getEwalletInfo, ytdl } = require('./lib/general/scrape')
+const { ephoto, CarbonifyV1, CarbonifyV2, mediafireDl, getMimeType, ssweb, tiktokSearchVideo, searchSpotifyTracks, pinterest, toBase64, toOriginal, obfusc, deobfusc, toGhRaw, toGhOri, toFont, kapital, obfus1, obfus2, autoLevelUp, getprodukDariFile, simpenProduknya, getidProduk, cekProduknye, addprodukzz, delprodukzz, updprodukzz, getprodukdb, simpenSmTr, getSmTr, getTrId, cIdTrnya, saveTrnye, simpenDisc, getDisczz, addDisczz, persenDiskonnya, ngerestokk, bacaData, simpanData, buatPapan, lemparDadu, generateTanggaDanUlar, pindahPosisi, mulaiGame, joinGame, mainGame, hapusGame, cariIdGame, mainGameAuto, hapusGameAuto, getRewards, rapihin, rapihin2, addWm, speedVideo, detekFps, ubahFps, audio2txt, getIPInfo,convertRecords, fetchDNSRecordsFromHackertarget, fetchDNSRecords, getEwalletInfo, ytdl } = require('./lib/general/scrape')
 const { search } = require('yt-search')
 const { sticker5 } = require('./lib/general/sticker')
 const apiKey = '59cd1d8559e5fa45edb5dff79cd51acc';
@@ -487,6 +480,15 @@ delete Line.autosholat[id]
 
 function bold(text) {
   return `*${text}*`
+}
+
+function countProfit(jumlahAwal) {
+    jumlahAwal = parseInt(jumlahAwal)
+    let keuntungan = jumlahAwal * 1
+    if (keuntungan > 1000) {
+        keuntungan = 1000
+    }
+    return (jumlahAwal + keuntungan).toFixed(0)
 }
 
 function loadWhitelist() {
@@ -1077,7 +1079,7 @@ messageId: msg.key.id
 })
 }
 
-async function listbut(chat, teks, jm) {
+async function listbut(chat, teks, listnye, jm) {
 let msg = generateWAMessageFromContent(m.chat, {
 viewOnceMessage: {
 message: {
@@ -1101,7 +1103,7 @@ businessOwnerJid: Line.decodeJid(Line.user.id)
 externalAdReply: {
 title: `${ucapanWaktu.toUpperCase()} KAK`,
 body: `${bulan} ${tahun}`,
-thumbnailUrl: global.thumb,
+thumbnailUrl: global.thumb2,
 sourceUrl: '',
 mediaType: 1,
 renderLargerThumbnail: true
@@ -1124,7 +1126,7 @@ document: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
 mimetype: "image/png",
 fileLength: 99999999999999,
 jpegThumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
-fileName: "Line",
+fileName: `${botname.toUpperCase()}`,
 }, {
 upload: Line.waUploadToServer
 }))
@@ -1133,7 +1135,8 @@ gifPlayback: true,
 nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
 buttons: [
 {
-text: '-'
+"name": "single_select",
+"buttonParamsJson": JSON.stringify(listnye)
 }],
 }), })}
 }}, {quoted: jm})
@@ -1142,7 +1145,7 @@ messageId: msg.key.id
 })
 }
 
-async function listbut2(chat, teks, jm) {
+async function listbut2(chat, teks, listnye, jm) {
 let msg = generateWAMessageFromContent(m.chat, {
 viewOnceMessage: {
 message: {
@@ -1178,7 +1181,7 @@ document: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
 mimetype: "image/png",
 fileLength: 99999999999999,
 jpegThumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
-fileName: "Line",
+fileName: `${botname.toUpperCase()}`,
 }, {
 upload: Line.waUploadToServer
 }))
@@ -1187,7 +1190,8 @@ gifPlayback: true,
 nativeFlowMessage: proto.Message.InteractiveMessage.NativeFlowMessage.create({
 buttons: [
 {
-text: '-'
+"name": "single_select",
+"buttonParamsJson": JSON.stringify(listnye)
 }],
 }), })}
 }}, {quoted: jm})
@@ -1237,8 +1241,7 @@ buttons: [
 ],
 })})
 }}
-}, { quoted: jm }) //ori (floc)
-
+}, { quoted: jm })
 await Line.relayMessage(msg.key.remoteJid, msg.message, {
 messageId: msg.key.id
 })
@@ -1594,7 +1597,7 @@ let sim = similarity(command, mean)
 let similarityPercentage = parseInt(sim * 100)
 if (mean && command.toLowerCase() !== mean.toLowerCase()) {
 let response = `Maaf, command yang kamu berikan salah. mungkin ini yang kamu maksud:\n\n•> ${prefix+mean}\n•> Kemiripan: ${similarityPercentage}%`
-vreply(response)
+Line.sendMessage(m.chat, { text: response, footer: `By ${wm}`, buttons: [{ buttonId: prefix+mean, buttonText: { displayText: `${mean.toUpperCase()}` }, type: 1 }], headerType: 1, viewOnce: true }, { quoted: m })
 }}
 
 if (m.isGroup && isAlreadyResponList(m.chat, body.toLowerCase(), db_respon_list)) {
@@ -2196,6 +2199,12 @@ if (db.data.users[m.sender].banned) return m.reply('Kamu telah dibanned!')
 if (m.isGroup && db.data.chats[m.chat].mute) {
 if (!isAdmins && !isOwner) return
 }
+if (global.gconly && !isGc && isCmd) {
+if (!isOwner) return
+}
+if (global.pconly && !isPc && isCmd) {
+if (!isOwner) return
+}
 
 let data = {}
 try {
@@ -2293,9 +2302,9 @@ switch (command) {
 
 case 'menu':
 case 'menu-v': {
-vreact()
+vreact();
 let susu = `
-┏━━━❖•ೋ° LINE-BOT °ೋ•❖━━━┓
+┏━━━❖•ೋ° LINE-BOT 
 ┃ 
 ┃  🤖 *INFO BOT*  
 ┃  ───────────────  
@@ -2305,7 +2314,7 @@ let susu = `
 ┃  ✦ Version : *v${version}*  
 ┃  ✦ Platform : *C-Ubuntu*  
 ┃  
-┣━━━❖•ೋ° COMMAND °ೋ•❖━━━┫  
+┣━━━❖•ೋ° COMMAND 
 ┃  
 ┃  01. *${prefix}mainmenu*        
 ┃  02. *${prefix}ownermenu*       
@@ -2335,12 +2344,174 @@ let susu = `
 ┃  26. *${prefix}digitalocean*    
 ┃  27. *${prefix}ppobindonesia*   
 ┃  
-┗━━━❖•ೋ°──────────°ೋ•❖━━━┛  
+┗━━━❖•ೋ°──────────
 ✨ *Line v${version} Official Version*  
-`
-listbut(m.chat, susu, m)
-}
-
+`;
+const bet = {
+title: "MENU",
+sections: [
+{
+title: `List Menu Sering Digunakan`, 
+highlight_label: `Populer`,
+rows: [
+{
+title: "All Menu",
+description: "📌 Menampilkan All Menu",
+id: `${prefix}allmenu-v`, 
+},
+]},
+{
+title: `List Menu Yang Dipisahkan`, 
+highlight_label: ``,
+rows: [
+{
+title: "Main Menu",
+description: "🎉 Menampilkan Main Menu",
+id: `${prefix}mainmenu-v`, 
+},
+{
+title: "Owner Menu",
+description: "👤 Menampilkan Owner Menu",
+id: `${prefix}ownermenu-v`, 
+},
+{
+title: "Group Menu",
+description: "👥 Menampilkan Group Menu",
+id: `${prefix}groupmenu-v`, 
+},
+{
+title: "Games Menu",
+description: "🎮 Menampilkan Games Menu",
+id: `${prefix}gamesmenu-v`, 
+},
+{
+title: "Store Menu",
+description: "🛍️ Menampilkan Store Menu",
+id: `${prefix}storemenu-v`, 
+},
+{
+title: "Menfes Menu",
+description: "📮 Menampilkan Menfes Menu",
+id: `${prefix}menfesmenu-v`, 
+},
+{
+title: "Cpanel Menu",
+description: "🛠️ Menampilkan Cpanel Menu",
+id: `${prefix}cpanelmenu-v`, 
+},
+{
+title: "Ngepush Menu",
+description: "💾 Menampilkan Ngepush Menu",
+id: `${prefix}ngepushmenu-v`, 
+},
+{
+title: "PPOB Indonesia",
+description: "💰 Menampilkan PPOB Indonesia",
+id: `${prefix}ppobindonesia-v`, 
+},
+{
+title: "Donlod Menu",
+description: "📂 Menampilkan Donlod Menu",
+id: `${prefix}donlodmenu-v`, 
+},
+{
+title: "ChatAI Menu",
+description: "🤖 Menampilkan ChatAI Menu",
+id: `${prefix}chataimenu-v`, 
+},
+{
+title: "Search Menu",
+description: "🔎 Menampilkan Search Menu",
+id: `${prefix}searchmenu-v`, 
+},
+{
+title: "NSFW Menu",
+description: "🔞 Menampilkan NFSW Menu",
+id: `${prefix}nsfwmenu-v`, 
+},
+{
+title: "Ephoto Menu",
+description: "🖼️ Menampilkan Ephoto Menu",
+id: `${prefix}ephotomenu-v`, 
+},
+{
+title: "Cecan Menu",
+description: "👰🏻 Menampilkan Cecan Menu",
+id: `${prefix}cecanmenu-v`, 
+},
+{
+title: "Tools Menu",
+description: "🧰 Menampilkan Tools Menu",
+id: `${prefix}toolsmenu-v`, 
+},
+{
+title: "Voice Menu",
+description: "🎧 Menampilkan Voice Menu",
+id: `${prefix}voicemenu-v`, 
+},
+{
+title: "Fun Menu",
+description: "😹 Menampilkan Fun Menu",
+id: `${prefix}funmenu-v`, 
+},
+{
+title: "Islamic Menu",
+description: "🕌 Menampilkan Islamic Menu",
+id: `${prefix}islammenu-v`, 
+},
+{
+title: "Maker Menu",
+description: "🎨 Menampilkan Maker Menu",
+id: `${prefix}makermenu-v`, 
+},
+{
+title: "Linode Menu",
+description: "💻 Menampilkan Linode Menu",
+id: `${prefix}linodemenu-v`, 
+},
+{
+title: "Digital Ocean",
+description: "🖥️ Menampilkan Digital Ocean",
+id: `${prefix}digitalocean-v`, 
+},
+{
+title: "Anime Menu",
+description: "😼 Menampilkan Anime Menu",
+id: `${prefix}animemenu`, 
+},
+title: "Others Menu",
+description: "📪 Menampilkan Others Menu",
+id: `${prefix}othersmenu-v`, 
+},
+]},
+{
+title: `Dokumentasi asli dari script ini`, 
+highlight_label: ``,
+rows: [
+{
+title: "Script",
+description: "💳 Beli script ini dengan harga murah",
+id: `${prefix}script`, 
+},
+{
+title: "Credit",
+description: "👑 Orang yang membantu mengembangkan",
+id: `${prefix}credit`, 
+},
+{
+title: "Info Bot",
+description: "📋 Informasi total fitur dan lainnya",
+id: `${prefix}infobot`, 
+},
+]},
+]};
+if (tipemenu === 'v1') {
+listbut2(m.chat, susu, bet, m)
+} else if (tipemenu === 'v2') {
+listbut(m.chat, susu, bet, m)
+} else if (tipemenu === 'v3') {
+vreply(susu)
+}}
 break
 
 case 'allmenu':
@@ -3076,6 +3247,8 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}listexc
  • ${prefix}read
  • ${prefix}gh
+ • ${prefix}gconly
+ • ${prefix}pconly
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3341,8 +3514,9 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}gitclone
  • ${prefix}happymod
  • ${prefix}pindl
- • ${prefix}xvideodl
  • ${prefix}xnxxdl
+ • ${prefix}pastebin
+ • ${prefix}xvideodl
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3471,6 +3645,8 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}chatgpt2
  • ${prefix}gpt4
  • ${prefix}gpt2
+ • ${prefix}claude
+ • ${prefix}cbaby
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3484,6 +3660,7 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
 
 乂 ${monospace("SEARCH  MENU")}
  • ${prefix}google
+ • ${prefix}appsstore
  • ${prefix}gimage
  • ${prefix}ytsearch
  • ${prefix}play
@@ -3517,6 +3694,10 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}cerpen
  • ${prefix}andro1
  • ${prefix}liteApks
+ • ${prefix}steam
+ • ${prefix}genius
+ • ${prefix}pixabay
+ • ${prefix}srclirik
 
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3767,6 +3948,10 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}totxt
  • ${prefix}expireddomain
  • ${prefix}cariresep
+ • ${prefix}hdvid720p
+ • ${prefix}hdvid1k
+ • ${prefix}hdvid2k
+ • ${prefix}hdvid4k
  
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3843,13 +4028,7 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}hdimg
  • ${prefix}recolor
  • ${prefix}dehaze
- • ${prefix}upskala
- • ${prefix}upchaudio
- • ${prefix}upchvideo
- • ${prefix}hdvid720p
- • ${prefix}hdvid1k
- • ${prefix}hdvid2k
- • ${prefix}hdvid4k
+ • ${prefix}hdvid
  • ${prefix}tourl
  • ${prefix}ssweb
  • ${prefix}nobg
@@ -6672,6 +6851,36 @@ m.reply('Sukses menonaktifkan antitoxic!')
 } else {
 m.reply(`Contoh: ${p_c} on/off`)
 }
+}
+break
+
+case 'modegrup':
+case 'gconly': {
+  if (!isOwner) return onlyOwn()
+  if (!args[0]) return m.reply(`Contoh: ${p_c} on/off`)
+  if (args[0] === 'on') {
+    global.gconly = true
+    global.pconly = false
+    await m.reply('Sukses mengubah ke mode gc-only.')
+  } else if (args[0] === 'off') {
+    global.gconly = false
+    await m.reply('Sukses mengubah ke mode gc/pc only.')
+  }
+}
+break
+
+case 'modepv':
+case 'pconly': {
+  if (!isOwner) return onlyOwn()
+  if (!args[0]) return m.reply(`Contoh: ${p_c} on/off`)
+  if (args[0] === 'on') {
+    global.pconly = true
+    global.gconly = false
+    await m.reply('Sukses mengubah ke mode pc-only.')
+  } else if (args[0] === 'off') {
+    global.pconly = false
+    await m.reply('Sukses mengubah ke mode gc/pc only.')
+  }
 }
 break
 
@@ -10699,6 +10908,300 @@ m.reply("Terjadi kesalahan: " + err.message);
 }
 }
 break
+
+case 'listmlbb': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+        
+        // Filter and sort the MLBB top-up options by price
+        let mlbb = data.filter(v => /TPG Diamond Mobile Legends/i.test(v.produk) && v.harga > 0);
+        mlbb.sort((a, b) => a.harga - b.harga);
+
+        // Create the list of items
+        const list = mlbb.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|IDGame
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK MLBB* ]
+Pastikan ID Game Anda Benar
+Contoh : 123456(1234)
+Cara Penggunaan: 1234561234\n\n${list.join('\n\n')}`;
+
+        // Send the deposit balance and the MLBB list
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching MLBB data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data MLBB." });
+    }
+    return;
+}
+break; 
+case 'liststumble': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let stumble = data.filter(v => /TPG Stumble Guys/i.test(v.produk) && v.harga > 0)
+                stumble.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+        // Create the list of items
+        const list = stumble.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|IDGame
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK STUMBLE* ]\n\n${list.join('\n\n')}`;
+
+        // Send the deposit balance and the STUMBLE list
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching stumble data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data stumble." });
+    }
+    return;
+}
+break; 
+case 'listdana': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+        
+        // Filter and sort the DANA top-up options by price
+        const dana = data
+            .filter(item => /Top Up Saldo DANA/i.test(item.produk) && item.harga > 0)
+            .sort((a, b) => a.harga - b.harga);
+        
+        // Map through the filtered items to create a formatted list
+        const list = dana.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+        const message = `[ *LIST HARGA PRODUK DANA* ]\n\n${list.join('\n\n')}`;
+        // Send the deposit balance and the DANA list
+        await Line.sendMessage(m.chat, {
+            text: message
+        });
+    } catch (error) {
+        console.error("Error fetching DANA data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data DANA." });
+    }
+    return;
+}
+break;
+case 'listhok': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+            let hok = data.filter(v => /TPG Honor of Kings/i.test(v.produk) && v.harga > 0)
+            .sort((a, b) => a.harga - b.harga);
+        const list = hok.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}| ${index + 1} ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+        const message = `[ *LIST HARGA PRODUK HOK* ]\n\n${list.join('\n\n')}`;
+        await Line.sendMessage(m.chat, {
+            text: message
+        });
+    } catch (error) {
+        console.error("Error fetching HOK data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data HOK." });
+    }
+    return;
+}
+break;  
+case 'listvalorant': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let valoran = data.filter(v => /TPG Valorant Points/i.test(v.produk) && v.harga > 0)
+                valoran.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = valoran.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|IDGame
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK VALORAN* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching Valoran data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data Valoran." });
+    }
+    return;
+}
+break;   
+case 'listfreefire': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let ff = data.filter(v => /TPG Diamond Free Fire/i.test(v.produk) && v.harga > 0)
+                ff.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = ff.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|IDGame
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK FREEFIRE* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching freefire data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data freefire." });
+    }
+    return;
+}
+break;         
+case 'listpubg': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let pubg = data.filter(v => /TPG Game Mobile PUBG/i.test(v.produk) && v.harga > 0)
+                pubg.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = pubg.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|IDGame
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK PUBG* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching pubg data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data pubg." });
+    }
+    return;
+}
+break; 
+case 'listgopay': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let gopay = data.filter(v => /Top Up Saldo GO-JEK Customer/i.test(v.produk) && v.harga > 0)
+                gopay.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = gopay.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|Nomor Pelanggan
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK GOPAY* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching gopay data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data gopay." });
+    }
+    return;
+}
+break; 
+case 'listaxis': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let ff = data.filter(v => /Axis/i.test(v.produk) && v.harga > 0)
+                ff.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = ff.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|Nomor
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK AXIS* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching axis data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data axis." });
+    }
+    return;
+}
+break; 
+case 'listtri': {
+    try {
+        const { data } = await axios.get("https://www.okeconnect.com/harga/json?id=905ccd028329b0a");
+
+                let ff = data.filter(v => /Three/i.test(v.produk) && v.harga > 0)
+                ff.sort(function(a, b) {
+                    return a.harga - b.harga
+                })
+
+
+        const list = ff.map((item, index) => {
+            const harga = countProfit(item.harga);
+            const status = item.status === "1" ? "Ready" : "Tidak Ready";
+            return `${prefix}beli ${item.kode}|Nomor
+Nama Produk: ${item.keterangan} \nHarga: ${toRupiah(harga)} \nStatus: ${status}`;
+        });
+
+        // Combine the header with the list
+        const message = `[ *LIST HARGA PRODUK THREE* ]\n\n${list.join('\n\n')}`;
+
+        await Line.sendMessage(m.chat, { text: message });
+    } catch (error) {
+        console.error("Error fetching three data:", error);
+        await Line.sendMessage(m.chat, { text: "Terjadi kesalahan saat mengambil data Three." });
+    }
+    return;
+}
+break
+case 'listp': {
+let tex = reply(`
+┏━ ⊑ *List Produk* ⊒
+┃ listdana
+┃ listgopay
+┃ listfreefire
+┃ listmlbb
+┃ listpubg
+┃ listvalorant
+┃ listhok
+┃ liststumble
+┃ listaxis
+┃ listtri
+┗━━━━━━━━━━━━━━`)
+Line.sendMessage(m.chat, { text : tex })
+}
+break
 // Nokos 
 
 case "orderotp": {
@@ -14381,36 +14884,36 @@ break
 case 'fb':
 case 'fbdl':
 case 'facebook': {
-    try {
-        if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-        if (!text.includes('facebook.com')) return m.reply('Harus berupa link facebook!')
-        vreact()
-        let hua = await fetchJson(`https://api.vreden.my.id/api/fbdl?url=${encodeURIComponent(text)}`)
-
-        if (hua.data.url) {
-            return await Line.sendMessage(m.chat, { video: { url: hua.data.url }, caption: `© ${wm}` }, { quoted: m })
-        } else {
-            m.reply('Video tidak ditemukan')
-        }
-    } catch (err) {
-        console.error('Kesalahan pada API:', err)
-        try {
-            let anu = await snapsave(text)
-            return await Line.sendMessage(m.chat, { video: { url: anu.links["Download High Quality"] }, caption: `© ${wm}` }, { quoted: m })
-        } catch (err) {
-            console.error('Kesalahan pada snapsave:', err)
-            try {
-                let anu = await snapsavev2(text)
-                return await Line.sendMessage(m.chat, { video: { url: anu.result[0].url }, caption: `© ${wm}` }, { quoted: m })
-            } catch (err) {
-                console.error('Kesalahan pada snapsavev2:', err)
-                m.reply('Terjadi kesalahan')
-            }
-        }
-    }
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    if (!text.includes('facebook.com')) return m.reply('Harus berupa link facebook!')
+    vreact()
+    let jor = await fetchJson(`https://vapis.my.id/api/fbdl?url=${text}`)
+        await Line.sendMessage(m.chat, {
+          video: {
+            url: jor.data.sd_url
+          },
+          caption: `© ${wm}`
+        }, {
+          quoted: m
+        })
+  } catch (err) {
+  try {
+    let jor = await fetchJson(`https://vapis.my.id/api/fbdl?url=${text}`)
+        await Line.sendMessage(m.chat, {
+          video: {
+            url: jor.data.sd_udl
+          },
+          caption: `© ${wm}`
+        }, {
+          quoted: m
+        })
+  } catch (err) {
+    console.error('Kesalahan pada API:', err)
+    m.reply('Terjadi kesalahan saat mengambil media')
+  }}
 }
 break
-
 
 case 'ig':
 case 'igdl':
@@ -14419,7 +14922,7 @@ case 'instagram': {
     if (!text) return m.reply(`Contoh: ${p_c} linknya`)
     if (!text.includes('instagram.com')) return m.reply('Harus berupa link instagram!')
     vreact()
-    let jor = await fetchJson(`https://api.siputzx.my.id/api/d/igdl?url=${text}`)
+    let jor = await fetchJson(`https://vapis.my.id/api/igdlv2?url=${text}`)
           await Line.sendMessage(m.chat, {
             video: {
               url: jor.data[0].url
@@ -14448,14 +14951,126 @@ break
 
 case 'twdl':
 case 'twitter': {
-try {
-if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-await vreact()
-let twitter = await twiterdl(text)
-Line.sendMessage(m.chat, { video: { url: twitter.data.downloads[1].url }, caption: `© ${wm}`}, {quoted: m})
-} catch(err) {
-m.reply(`Terjadi kesalahan`);
-}}
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    await vreact()
+    let twitter = await fetchJson(`https://deliriussapi-oficial.vercel.app/download/twitterdl?url=${text}`)
+    Line.sendMessage(m.chat, {
+      video: {
+        url: twitter.data.video_sd
+      },
+      caption: `© ${wm}`
+    }, {
+      quoted: m
+    })
+  } catch (err) {
+    m.reply(`Terjadi kesalahan`);
+  }
+}
+break
+
+case 'ccdl':
+case 'capcut': {
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    if (!text.includes('capcut.com') && !text.includes('capcut.net')) return m.reply('Harus berupa link capcut!')
+    vreact()
+    let anu = await fetchJson(`https://api.vreden.my.id/api/capcutdl?url=${text}`)
+    if (anu.result && anu.result.url) {
+      return await Line.sendMessage(m.chat, {
+        video: {
+          url: anu.result.url
+        },
+        caption: `© ${wm}`
+      }, {
+        quoted: m
+      })
+    }
+    } catch (err) {
+      console.error(err)
+      m.reply('Terjadi kesalahan')
+    }
+}
+break
+
+case 'videy':
+case 'videydl': {
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    await vreact()
+    let twitter = await fetchJson(`https://vapis.my.id/api/videy?url=${text}`)
+    Line.sendMessage(m.chat, {
+      video: {
+        url: twitter.data
+      },
+      caption: `© ${wm}`
+    }, {
+      quoted: m
+    })
+  } catch (err) {
+    m.reply(`Terjadi kesalahan`);
+  }
+}
+break
+
+case 'spotify': {
+  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+  if (!text.includes('spotify.com', 'open.spotify')) return m.reply('Harus berupa link spotify!')
+  try {
+    vreact()
+    const spotify = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${text}`)
+    const details = `• *Judul:* ${spotify.result.title}\n• *Artis:* ${spotify.result.artists}\n• *Rilis:* ${spotify.result.releaseDate}`
+    Line.sendMessage(m.chat, {
+      audio: {
+        url: spotify.result.music
+      },
+      mimetype: 'audio/mpeg',
+      caption: details,
+      ptt: false
+    }, {
+      quoted: m
+    })
+  } catch (err) {
+    m.reply('Terjadi kesalahan: ' + err)
+  }
+}
+break
+
+case 'gddl':
+case 'gdrive': {
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    vreact()
+    let hao = await fetchJson(`https://api.siputzx.my.id/api/d/gdrive?url=${text}`)
+      let fileName = hao.data.name
+      return await Line.sendMessage(m.chat, {
+        document: {
+          url: hao.data.download
+        },
+        mimetype: 'application/zip',
+        fileName: fileName
+      }, {
+        quoted: m
+      })
+  } catch (err) {
+    console.error('Kesalahan pada API:', err)
+    m.reply('Terjadi kesalahan')
+  }
+}
+break
+
+case 'tinyurl': {
+  if (!q) return m.reply(`Contoh: ${p_c} linknya`);
+  fetch(`https://tinyurl.com/api-create.php?url=${Enc(q)}`)
+  .then(response => response.text())
+  .then(body => {
+    m.reply(body);
+  })
+  .catch(err => {
+    m.reply('Terjadi kesalahan');
+  });
+
+}
 break
 
 case 'tbdl':
@@ -14518,92 +15133,6 @@ headerType: 1,
 } catch (err) {
 m.reply(`Terjadi kesalahan: ${err.message}`);
 }
-}
-break
-
-case 'ccdl':
-case 'capcut': {
-try {
-if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-if (!text.includes('capcut.com') && !text.includes('capcut.net')) return m.reply('Harus berupa link capcut!')
-vreact()
-let anu = await fetchJson(`https://api.vreden.my.id/api/capcutdl?url=${encodeURIComponent(text)}`)
-if (anu.result && anu.result.url) {
-return await Line.sendMessage(m.chat, { video: { url: anu.result.url }, caption: `© ${wm}` }, { quoted: m })
-} else {
-m.reply('Video tidak ditemukan')
-}
-} catch (err) {
-console.error('Kesalahan pada API:', err)
-try {
-let anu = await capcutdl(text)
-return await Line.sendMessage(m.chat, { video: { url: `https://ssscap.net${anu.originalVideoUrl}` }, caption: `© ${wm}` }, { quoted: m })
-} catch (err) {
-console.error('Kesalahan pada capcutdl:', err)
-m.reply('Terjadi kesalahan saat mengambil video')
-}
-}
-}
-break
-
-case 'spotify': {
-  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
-  if (!text.includes('spotify.com', 'open.spotify')) return m.reply('Harus berupa link spotify!')
-  try {
-    vreact()
-    const spotify = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${Enc(text)}`)
-    const details = `• *Judul:* ${spotify.result.title}\n• *Artis:* ${spotify.result.artists}\n• *Rilis:* ${spotify.result.releaseDate}`
-    Line.sendMessage(m.chat, {
-      audio: {
-        url: spotify.result.music
-      },
-      mimetype: 'audio/mpeg',
-      caption: details,
-      ptt: false
-    }, {
-      quoted: m
-    })
-  } catch (err) {
-    m.reply('Terjadi kesalahan: ' + err)
-  }
-}
-break
-
-case 'gddl':
-case 'gdrive': {
-    try {
-        if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-        vreact()
-        let hao = await fetchJson(`https://api.vreden.my.id/api/drive?url=${encodeURIComponent(text)}`)
-        if (hao && hao.result && hao.result.downloadUrl) {
-            let fileName = hao.result.fileName
-            return await Line.sendMessage(m.chat, {
-                document: { url: hao.result.downloadUrl },
-                mimetype: 'application/zip',
-                fileName: fileName
-            }, { quoted: m })
-        } else {
-            console.error('API gagal respon')
-            m.reply('Tidak dapat menemukan file')
-        }
-    } catch (err) {
-        console.error('Kesalahan pada API:', err)
-        m.reply('Terjadi kesalahan')
-    }
-}
-break
-
-case 'tinyurl': {
- if (!q) return m.reply(`Contoh: ${prefix+command} linknya`);
- fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(q)}`)
-  .then(response => response.text())
-  .then(body => {
-m.reply(body);
-  })
-  .catch(err => {
-m.reply('Terjadi kesalahan');
-  });
-
 }
 break
 
@@ -14710,6 +15239,13 @@ Link Download: ${data.download.url}`;
         console.error(err);
         m.reply(err.toString());
     }
+}
+break
+
+case 'pastebin': {
+  if (!text) return m.reply(`Contoh: ${p_c} linknya`)
+    const pe = await axios.get(`https://vapis.my.id/api/pastebin?url=${text}`)
+    m.reply(pe.data.data)
 }
 break
 
@@ -15292,6 +15828,39 @@ try {
 }
 break
 
+case 'claude':
+case 'claude-ai': {
+  try {
+    if (!text) return m.reply(`Contoh: ${p_c} hai`);
+    let prompt = 'Your name is Claude-AI and use Indonesian as your primary language.'
+    const apiUrl = await fetchJson(`https://api.siputzx.my.id/api/ai/llama?prompt=${prompt}&message=${text}`)
+    const gpt = apiUrl.data
+    m.reply(`${gpt}`)
+  } catch (err) {
+    console.error(err);
+    m.reply('Terjadi kesalahan');
+  }
+}
+break
+
+case 'createbaby':
+case 'cbaby':
+case 'aibaby': {
+  if (!text) return m.reply(`Contoh: ${p_c} urlBapak, urlEmak, gender`)
+  const [url1, url2, gender] = text.split(',').map(x => x.trim())
+  if (!url1 || !url2) return m.reply(`Contoh: ${p_c} urlBapak, urlEmak, gender`)
+  if (gender && gender !== 'girl' && gender !== 'boy') return m.reply(`Contoh: ${p_c} urlBapak, urlEmak, boy`)
+  try {
+    const { cBaby } = require('./lib/general/scrape')
+    const imageUrl = await cBaby(url1, url2, gender || 'girl')
+    await Line.sendMessage(m.chat, {image: {url: imageUrl }, caption: wm }, {quoted: m })
+  } catch (er) {
+    console.error(e)
+    m.reply('Terjadi kesalahan: '+e)
+  }
+}
+break
+
 // === Search Menu
 case 'anitaku': {
 if (!text) {
@@ -15666,6 +16235,28 @@ m.reply('Terjadi kesalahan')
 })}
 break
 
+case 'appstore':
+case 'astore': {
+    if (!text) return m.reply(`Contoh: ${p_c} whatsapp`);
+    try {
+        let loo = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/appstore?q=${text}`);
+        let gambar = loo[0]?.image;
+        let teks = loo.map((yoo, i) => {
+            return `*${i + 1}. ${yoo.title.toUpperCase()}*
+Developer: ${yoo.developer}
+Rating: ${yoo.rating}
+Rilis: ${yoo.released}
+Update: ${yoo.updated}
+Link Developer: ${yoo.url}`;
+        }).join('\n\n');
+        await Line.sendMessage(m.chat, { image: { url: gambar }, caption: teks }, { quoted: m });
+    } catch (err) {
+        console.error(err);
+        m.reply(err.toString());
+    }
+}
+break
+
 case 'gimage': {
  if (!text) return m.reply(`Contoh: ${prefix+command} Line`)
  vreact()
@@ -15728,44 +16319,90 @@ break
 
 case 'yts':
 case 'ytsearch': {
-    if (!text) return m.reply(`Contoh: ${prefix + command} aku yang tersakiti`);
+    if (!text) return reply(`Contoh : ${prefix + command} story wa anime`);
+    vreact();
     try {
-        vreact();
-        const searchResults = await search(text); 
-        const videos = searchResults.videos; 
-        let teks = `*YOUTUBE - SEARCH*\n\nHasil dari: ${kapital(text)}\n\n`;
-        let no = 1;
-        for (let i of videos) {
-            teks += `Judul: ${i.title}\nChannel: ${i.author.name}\nDurasi: ${i.timestamp}\nViews: ${toRupiah(i.views)}\nDiupload: ${i.ago}\nLink: ${i.url}\n\n`;
+        let res = await fetch(`https://lineaja.my.id/api/search/yt?q=${encodeURIComponent(text)}`);
+        let json = await res.json();
+
+        if (!json.status || !json.data || json.data.length === 0) {
+            return reply('Tidak ditemukan video yang relevan.');
         }
-        Line.sendMessage(
-            m.chat,
-            { image: { url: videos[0].thumbnail }, caption: teks },
-            { quoted: m }
-        );
+
+        let uii = json.data;
+        let ytscard = [];
+        let teks = `\n${uii[0].title}\n\n*Video ID:* ${uii[0].url.split('v=')[1]}\n*Views:* ${uii[0].views}\n*Duration:* ${uii[0].duration}\n*Upload At:* ${uii[0].author}\n\n`;
+
+        let no = 1;
+        for (let i of uii) {
+            if (i.url) {
+                ytscard.push({
+                    title: `${no++}. ${i.title}`,
+                    rows: [
+                        {
+                            header: `[ ${i.duration} ] Download Audio`,
+                            title: `ID: ${i.url.split('v=')[1]}`,
+                            description: `Link: ${i.url}`,
+                            id: `.audio ${i.url}`,
+                        },
+                        {
+                            header: `[ ${i.duration} ] Download Video`,
+                            title: `ID: ${i.url.split('v=')[1]}`,
+                            description: `Link: ${i.url}`,
+                            id: `.video ${i.url}`,
+                        }
+                    ]
+                });
+            }
+        }
+
+        // Menyiapkan button
+        let button = [
+            {
+                "name": "single_select",
+                "buttonParamsJson": `{\n  title: 'Search 🔎',\n  sections: ${JSON.stringify(ytscard)}\n}`
+            }
+        ];
+
+        // Mendapatkan thumbnail dan mengirim pesan
+        let buffer = await getBuffer(uii[0].thumbnail);
+        Line.sendButtonImage(m.chat, "*乂 YOUTUBE SEARCH*", teks, buffer, button, m);
+
     } catch (err) {
-        m.reply(`Terjadi kesalahan: ${err}`);
+        m.reply(`Terjadi kesalahan: ${err.message || err}`);
     }
     break;
 }
 break;
 
 case 'play': {
-  if (!text) return m.reply(`Contoh: ${command} aku yang tersakiti`)
+  if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
   try {
     vreact()
-    const play = await search(text)
-    const { title, url, author, timestamp, thumbnail } = play.all[0]
-
+    let res = await fetch(`https://lineaja.my.id/api/search/yt?q=${encodeURIComponent(text)}`)
+    let json = await res.json()
+    
+    if (!json.status || !json.data.length) return m.reply('Tidak ditemukan hasil.')
+    
+    const { title, url, author, duration, thumbnail } = json.data[0]
     const body = `• Judul: ${title}\n` +
-      `• Channel: ${author.name}\n` +
-      `• Durasi: ${timestamp}\n` +
+      `• Channel: ${author}\n` +
+      `• Durasi: ${duration}\n` +
       `• Link: ${url}\n\nKetik .video tuk vidio\nKetik .audio tuk audio`
-
-    Line.sendMessage(m.chat, { 
-      image: { url: thumbnail }, 
-      caption: `YOUTUBE - PLAY\n${body}` 
-    }, { quoted: m })
+      
+    let buffer = await getBuffer(thumbnail)
+    let button = [
+       {
+          "name": "quick_reply",
+          "buttonParamsJson": `{\"display_text\":\"Video\",\"id\":\".video ${url}\"}`
+       },
+       {
+          "name": "quick_reply",
+          "buttonParamsJson": `{\"display_text\":\"Audio\",\"id\":\".audio ${url}\"}`
+       }
+    ]
+    
+    Line.sendButtonImage(m.chat, `YOUTUBE - PLAY\n`, body, buffer, button, m)
   } catch (err) {
     m.reply(`Terjadi kesalahan: ${err.message}`)
   }
@@ -15883,26 +16520,6 @@ case 'spotifysearch': {
   }, {
     quoted: m
   })
-}
-break
-
-case 'pindl': {
-    if (!text) return m.reply(`Contoh: ${p_c} https://pin.it/2Vflx5O`);
-    try {
-        let loo = await fetchJson(`https://deliriussapi-oficial.vercel.app/download/pinterestdl?url=${text}`);
-        let data = loo.data;
-        let teks = `Deskripsi: ${data.description}
-Author: ${data.author_name} (${data.username})
-Sumber: ${data.source}
-Link Download: ${data.download.url}`;
-        await Line.sendMessage(m.chat, {
-            image: { url: data.thumbnail },
-            caption: teks
-        }, { quoted: m });
-    } catch (err) {
-        console.error(err);
-        m.reply(err.toString());
-    }
 }
 break
 
@@ -16878,7 +17495,7 @@ case 'nuliskiri': {
   if (!text) return m.reply(`Contoh: ${p_c} toyaa`)
   try {
     vreact()
-    const p = await fetchJson(`https://api.neoxr.eu/api/nulis?text=${text}&apikey=LineS`)
+    const p = await fetchJson(`https://api.neoxr.eu/api/nulis?text=${text}&apikey=ViooS`)
     Line.sendMessage(m.chat, {
       image: {
         url: p.data.url
@@ -17055,32 +17672,6 @@ Line.sendMessage(m.chat, {
 image: { url: imageUrl }, 
 caption: `Gambar Dari prompt: ${text}\n© ${wm}`
 }, { quoted: m });
-} catch (err) {
-m.reply(`Terjadi kesalahan: ${err.message}`);
-}
-}
-break
-
-case 'translate': {
-try {
-const args = text.split('|');
-if (args.length < 2) {
-return m.reply(`Contoh: ${prefix + command} teks | kode bahasa\nExample: .translate I love you | id`);
-}
-const query = args[0].trim();
-const targetLang = args[1].trim();
-await vreact();
-const response = await axios.post('https://translate.googleapis.com/translate_a/single', null, {
-params: {
-client: 'gtx',
-sl: 'auto',
-tl: targetLang,
-dt: 't',
-q: query
-}
-});
-const translatedText = response.data[0][0][0];
-m.reply(`🌐 *Hasil Terjemahan*:\n\n${translatedText}`);
 } catch (err) {
 m.reply(`Terjadi kesalahan: ${err.message}`);
 }
@@ -17692,7 +18283,7 @@ case 'ocr': {
   vreact()
 
   try {
-    let url = await uploadToPomf(media)
+    let url = await uploadMedia(media)
     let jr = await fetchJson(`https://itzpire.com/tools/ocr?url=${encodeURIComponent(url)}`)
     let jw = jr.data
     m.reply(`*Overlay:* ${jw.TextOverlay.HasOverlay ? 'Yes' : 'No'}\n*Message:* ${jw.Message ? jw.Message : 'Nothing'}\n*Hasil OCR:* ${jw.ParsedText}`)
@@ -17711,8 +18302,8 @@ case 'whatmusic': {
   vreact()
 
   try {
-    let url = await uploadToPomf(media)
-    let jr = await fetchJson(`https://btch.us.kg/whatmusic?url=${encodeURIComponent(url)}`)
+    let url = await CatBox(media)
+    let jr = await fetchJson(`https://api.tioo.eu.org/whatmusic?url=${Enc(url)}`)
     m.reply(jr.result)
   } catch (err) {
       console.error(err)
@@ -17720,6 +18311,26 @@ case 'whatmusic': {
   }
 
   await fs.unlinkSync(media)
+}
+break
+
+case 'stcrandom': {
+    try {
+        if (!text) return m.reply(`Contoh: ${p_c} dino`)
+        const res1 = await fetchJson(`https://api.agatz.xyz/api/sticker?message=${text}`)
+        const sticker1Url = res1.data.sticker_url[Math.floor(Math.random() * res1.data.sticker_url.length)]
+        const buffer = await fetch(sticker1Url).then(res => res.buffer())
+        await Line.sendImageAsSticker(m.chat, buffer, m, { packname: '', author: author + ` | ${db.data.users[m.sender].nama}` })
+    } catch (err) {
+        try {
+            const res2 = await fetchJson(`https://itzpire.com/search/sticker?query=${text}`)
+            const sticker2Url = res2.data.sticker_url[Math.floor(Math.random() * res2.data.sticker_url.length)]
+            const buffer = await fetch(sticker2Url).then(res => res.buffer())
+            await Line.sendImageAsSticker(m.chat, buffer, m, { packname: '', author: author + ` | ${db.data.users[m.sender].nama}` })
+        } catch (err) {
+            m.reply('Terjadi kesalahan: ' + err)
+        }
+    }
 }
 break
 
@@ -17857,6 +18468,60 @@ case 'steam': {
        }).join('\n')
 
        let firstImageUrl = results.data[0].image;
+       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
+   } catch (err) {
+       m.reply('Terjadi kesalahan: ' + err)
+       console.error('Error:', err)
+   }
+}
+break
+
+case 'genius':
+case 'geniussrc': {
+   try {
+       if (!text) return m.reply(`Contoh: ${p_c} mbappe`)
+       let results = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/genius?q=${Enc(text)}`)
+       let allResults = results.map(kep => {
+           return `Judul: ${kep.fullTitle}\nArtis: ${kep.artist.name}\nPublik: ${kep.publish}\nLink: ${kep.url}\nAvatar: ${kep.artist.avatar}\n`
+       }).join('\n')
+
+       let firstImageUrl = results[0].thumbnail;
+       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
+   } catch (err) {
+       m.reply('Terjadi kesalahan: ' + err)
+       console.error('Error:', err)
+   }
+}
+break
+
+case 'pixabay':
+case 'pixabaysrc': {
+   try {
+       if (!text) return m.reply(`Contoh: ${p_c} mbappe`)
+       let results = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/pixabay?query=${text}`)
+       let allResults = results.data.map(kep => {
+           return `Tags: ${kep.tags}\nSize: ${kep.size}\nLike: ${kep.likes}\nComment: ${kep.comments}\nDownload: ${kep.downloads}\nUser: ${kep.user}\nLink: ${kep.link}\n`
+       }).join('\n')
+
+       let firstImageUrl = results.data[0].image;
+       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
+   } catch (err) {
+       m.reply('Terjadi kesalahan: ' + err)
+       console.error('Error:', err)
+   }
+}
+break
+
+case 'liriksrc':
+case 'srclirik': {
+   try {
+       if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
+       let results = await fetchJson(`https://vapis.my.id/api/lirik?q=${Enc(text)}`)
+       let allResults = results.data.map(kep => {
+           return `Judul: ${kep.title}\nArtis: ${kep.artist}\nAlbum: ${kep.album}\nLink: ${kep.link}\n`
+       }).join('\n')
+
+       let firstImageUrl = results.data[0].imageUrl;
        Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
    } catch (err) {
        m.reply('Terjadi kesalahan: ' + err)
@@ -18222,15 +18887,6 @@ case 'listjadibot': {
 }
 break
 
-case 'listjadibot': {
-  if (isOwner && isPremium) {
-    listjadibot(Line, m)
-  } else {
-    m.reply('Fitur khusus owner dan premium!')
-  }
-}
-break
-
 case 'ceknickff': {
 let ffnick = q.split(" ")[0]
 if (!ffnick) return m.reply(`ID FF nya mana?`)
@@ -18278,37 +18934,48 @@ if (res.data.status == true) {
 break
 
 case 'upchaudio': {
-if (!isOwner) return onlyOwn()
-if (!/audio/.test(mime)) return m.reply(`\`\`\`🚩 Reply Audio dengan ${prefix + command} untuk mengunggah\`\`\``);
+if (!isOwner) return onlyOwn();
+if (!/audio/.test(mime)) {
+return m.reply(`🚩 *Reply audio dengan* _${prefix + command}_ *untuk mengunggah!*`);
+}
 Line.sendMessage(m.chat, { react: { text: '🕐', key: m.key } });
 try {
 const media = await Line.downloadAndSaveMediaMessage(quoted);
-const anu = await uploadToPomf(media);
-Line.sendMessage(chjid + "@newsletter", {
+const anu = await uploadMedia(media);
+const senderName = m.pushName || "Pengguna";
+let profilePictureUrl;
+try {
+profilePictureUrl = await Line.profilePictureUrl(m.sender, 'image');
+} catch {
+profilePictureUrl = "https://files.catbox.moe/vikf6c.jpg";  
+}
+await Line.sendMessage(chjid + "@newsletter", {
 audio: {
-url: `${util.format(anu)}`,
+url: util.format(anu),
 },
 mimetype: 'audio/mpeg',
-ptt: true, 
+ptt: true,
 contextInfo: {
 forwardingScore: 9999,
 isForwarded: true,
 externalAdReply: {
-title: "Line - Wabot",
-body: "",
-thumbnailUrl: "https://files.catbox.moe/vikf6c.jpg",
-sourceUrl: null,
+title: `From: ${senderName}`,
+body: "Hi Everyone!",
+thumbnailUrl: profilePictureUrl,
+sourceUrl: "https://lineaja.my.id",
 mediaType: 1,
 },
 },
-caption: text,
+caption: text || "🎵 Audio berhasil diunggah",
 });
 await sleep(2000);
 Line.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+m.reply(`*Audio berhasil diunggah dan dikirim!*`);      
 } catch (error) {
-console.error(error);
-m.reply('⚠️ Terjadi kesalahan saat mengunggah audio.');
-}
+console.error('Error saat upload audio:', error);
+m.reply('*Terjadi kesalahan saat mengunggah audio.*\nSilakan coba lagi atau periksa koneksi Anda.');
+Line.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
+}   
 break;
 }
 break
@@ -18319,7 +18986,7 @@ if (!/video/.test(mime)) return m.reply(`\`\`\`🚩 Reply Video dengan ${prefix 
 Line.sendMessage(m.chat, { react: { text: '🕐', key: m.key } });
 try {
 const media = await Line.downloadAndSaveMediaMessage(quoted);
-const anu = await uploadToPomf(media);
+const anu = await uploadMedia(media);
 Line.sendMessage(chjid + "@newsletter" , {
 video: {
 url: `${util.format(anu)}`,
@@ -18364,7 +19031,7 @@ case 'enhance': {
     } catch (err) {
         try {
             if (!media) media = await quoted.download()
-            let url = await uploadToPomf(media)
+            let url = await uploadMedia(media)
                 Line.sendMessage(m.chat, { image: { url: `https://ai.xterm.codes/api/tools/remini?url=${url}&key=Fourstore` }, caption: 'Sukses' }, { quoted: m });
         } catch (err) {
             m.reply('Error saat mengirim gambar: ' + err.message);
@@ -18389,23 +19056,6 @@ const { remini } = require('./lib/general/scrape')
 let media = await quoted.download()
 let proses = await remini(media, "dehaze");
 Line.sendMessage(m.chat, { image: proses, caption: 'Sukses'}, { quoted: m})
-}
-break
-
-case 'upskala':
-case 'upscaler':
-case 'upscale':
-case 'upscala': {
-  if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${command}`);
-  vreact();
-  let media = await Line.downloadAndSaveMediaMessage(quoted)
-  let url = await uploadToPomf(media)
-  Line.sendMessage(m.chat, {
-    image: {url: `https://api.ryzendesu.vip/api/ai/upscaler?url=${url}` },
-    caption: 'Sukses'
-  }, {
-    quoted: m
-  });
 }
 break
 
@@ -18604,23 +19254,102 @@ reply('Terjadi kesalahan saat memproses video. Silakan coba lagi.');
 }
 break
 
+case 'ngl': {
+  if (!text) return m.reply('Example: .ngl Oyyy Nek');
+  try {
+    let link = 'https://ngl.link/callmeline89540'; 
+    let pesan = encodeURIComponent(text); 
+    let url = `https://lineaja.my.id/api/tools/ngl?link=${encodeURIComponent(link)}&pesan=${pesan}&tipe=yourcrush`;
+    
+    let res = await fetch(url);
+    let result = await res.json();
+    
+    if (result.success) {
+      m.reply('Pesan gagal dikirim!');
+    } else {
+      m.reply('Pesan berhasil dikirim!.');
+    }
+  } catch (err) {
+    m.reply(`Terjadi kesalahan: ${err.message}`);
+  }
+}
+break
+
+case 'linee': {
+  try {
+    let groups = await Line.groupFetchAllParticipating(); // Ambil semua grup yang diikuti bot
+    let groupList = Object.values(groups); // Ubah ke dalam array
+    
+    if (groupList.length === 0) {
+      return m.reply('Bot tidak tergabung dalam grup mana pun.');
+    }
+
+    // Kirim jumlah grup terlebih dahulu
+    m.reply(`Bot tergabung dalam ${groupList.length} grup.`);
+
+    let replyText = 'Memproses daftar grup:\n\n';
+    let groupIds = [];
+
+    groupList.forEach((group, index) => {
+      replyText += `${index + 1}. ${group.subject}\n`;
+      replyText += `ID: ${group.id}\n`;
+      replyText += `Deskripsi: ${group.desc || 'Tidak ada deskripsi'}\n\n`;
+      
+      // Simpan ID grup untuk diproses lebih lanjut
+      groupIds.push(group.id);
+    });
+
+    // Kirim daftar grup
+    m.reply(replyText); 
+    
+    // Proses grup lebih lanjut (contoh)
+    groupIds.forEach(async (groupId) => {
+      try {
+        let groupInfo = await Line.getGroupInfo(groupId);
+        console.log(`Memproses grup: ${groupInfo.subject}`);
+        // Lakukan sesuatu dengan informasi grup
+      } catch (error) {
+        console.error(`Gagal memproses grup ${groupId}: ${error.message}`);
+      }
+    });
+
+  } catch (err) {
+    m.reply(`Terjadi kesalahan: ${err.message}`);
+  }
+}
+break
+
 case 'tourl': {
-    if (!/image/.test(mime) && !/video/.test(mime) && !/audio/.test(mime) && !/webp/.test(mime)) return m.reply('Harus berupa vidio, gambar, audio, stiker')
-    let media = await Line.downloadAndSaveMediaMessage(quoted)
-    vreact()
-
+    if (!quoted) return reply("Mana File Nya?");
+    let mime = quoted.mimetype || '';    
+    if (!/video/.test(mime) && !/image/.test(mime) && !/audio/.test(mime)) {
+        return reply(`Kirim/reply gambar, video, atau audio dengan caption:\n${prefix + command}`);
+    }
+    await Line.sendMessage(m.chat, { react: { text: "🔎", key: m.key }});
+    const { uploadMedia } = require('./lib/general/uploader');
+    let media;
     try {
-        let url = await uploadToPomf(media)
-        m.reply(`Link: ${url}`)
+        media = await Line.downloadMediaMessage(quoted);
+        console.log("Sedang Mengunduh Media:", media);
     } catch (err) {
+        console.error("Error download media:", err.message);
+        return reply(`Error Tidak Dapat Mengunduh Media.`);
+    }
+    if (!media || media.length === 0) {
+        return reply(`Error Media Tidak Ditemukan atau Kosong.`);
+    }
     try {
-        let urll = await uploadToCdn(media)
-        m.reply(`Link: ${urll}`)
-    } catch (err) {
-        m.reply(err)
-    }}
+        let url = await uploadMedia(media, mime);
 
-    await fs.unlinkSync(media)
+        let coo = `{\"display_text\":\"COPY LINK\",\"id\":\"P\",\"copy_code\":\"${url}\"}`;
+        
+        buttoncopy(m.chat, `*Link*: ${url}`, coo, m); 
+    } catch (err) {
+        console.error("Error Upload File:", err.message);
+        reply(`Error Upload File: ${err.message}`);
+    } finally {
+        if (fs.existsSync(media)) fs.unlinkSync(media); 
+    }
 }
 break;
 
@@ -18638,30 +19367,37 @@ break
 
 case 'removebg':
 case 'nobg': {
-if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar/stiker dengan caption ${prefix+command}`)
-vreact()
-let { removeBg } = require('./lib/general/scrape')
-let img = await quoted.download()
-let image = await removeBg(img)
-let result = await Buffer.from(image, "base64")
-Line.sendImage(m.chat, result, `© ${wm}`, m)
+  if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar/stiker dengan caption ${command}`)
+  vreact()
+  let {
+    removeBg
+  } = require('./lib/general/scrape')
+  let img = await quoted.download()
+  let image = await removeBg(img)
+  let result = await Buffer.from(image, "base64")
+  Line.sendImage(m.chat, result, `© ${wm}`, m)
 }
 break
 
 case 'resize': {
-if (!args[0]) return m.reply(`Contoh ${prefix+command} 300x300\nPanjangxlebar`)
-await vreact() 
-let panjang = q.split('x')[0] 
-let lebar = q.split('x')[1] 
-let media = await Line.downloadAndSaveMediaMessage(quoted)
-let ran = getRandom('.jpeg')
-exec(`ffmpeg -i ${media} -vf scale=${panjang}:${lebar} ${ran}`, async (err) => {
-fs.unlinkSync(media)
-if (err) return m.reply(`Terjadi kesalahan`)
-let buffer453 = fs.readFileSync(ran)
-await Line.sendMessage(m.chat, {mimetype: 'image/jpeg', image: buffer453 }, {quoted: m })
-fs.unlinkSync(ran)
-})
+  if (!args[0]) return m.reply(`Contoh ${command} 300x300\nPanjangxlebar`)
+  await vreact()
+  let panjang = q.split('x')[0]
+  let lebar = q.split('x')[1]
+  let media = await Line.downloadAndSaveMediaMessage(quoted)
+  let ran = getRandom('.jpeg')
+  exec(`ffmpeg -i ${media} -vf scale=${panjang}:${lebar} ${ran}`, async (err) => {
+    fs.unlinkSync(media)
+    if (err) return m.reply(`Terjadi kesalahan`)
+    let buffer453 = fs.readFileSync(ran)
+    await Line.sendMessage(m.chat, {
+      mimetype: 'image/jpeg',
+      image: buffer453
+    }, {
+      quoted: m
+    })
+    fs.unlinkSync(ran)
+  })
 }
 break
 
@@ -18881,18 +19617,22 @@ await fs.unlinkSync(media)
 break
 
 case 'smeme': {
-if (!/webp/.test(mime) && /image/.test(mime)) {
-vreact()
-atas = text.split('|')[0] ? text.split('|')[0] : '-'
-bawah = text.split('|')[1] ? text.split('|')[1] : '-'
-mee = await Line.downloadAndSaveMediaMessage(quoted)
-mem = await uploadToCdn(mee)
-let smeme = `https://api.memegen.link/images/custom/${encodeURIComponent(atas)}/${encodeURIComponent(bawah)}.png?background=${mem}`
-let stiker = await sticker5(smeme, false, ``, author)
-if (stiker) return Line.sendFile(m.chat, stiker, 'Quotly.webp', '', m)
-} else {
-m.reply(`Kirim/kutip gambar dengan caption ${prefix+command} San|Abc`)
-}}
+  if (!/webp/.test(mime) && /image/.test(mime)) {
+    vreact()
+    atas = text.split('|')[0] ? text.split('|')[0] : '-'
+    bawah = text.split('|')[1] ? text.split('|')[1] : '-'
+    mee = await Line.downloadAndSaveMediaMessage(quoted)
+    mem = await CatBox(mee)
+    let smeme = await fetch(`https://api.memegen.link/images/custom/${Enc(atas)}/${Enc(bawah)}.png?background=${mem}`)
+    let smem = await smeme.buffer()
+    await Line.sendImageAsSticker(m.chat, smem, m, {
+      packname: ``,
+      author: `${author} | ${db.data.users[m.sender].nama}`
+    })
+  } else {
+    m.reply(`Kirim/kutip gambar dengan caption ${command} sanjaya|toyaa`)
+  }
+}
 break
 
 case 'wm':
@@ -18925,22 +19665,22 @@ Line.sendMessage(m.chat, {audio : {url : aud}, mimetype:'audio/mpeg', ptt: true}
 }
 break
 
-case 'readvo': 
+case 'readvo':
 case 'rvo': {
-if (!m.quoted) return m.reply('Kirim/kutip vidio/gambar')
-if (m.quoted.mtype !== 'viewOnceMessageV2') return m.reply('Ini bukan pesan view once!')
-let msg = m.quoted.message
-let type = Object.keys(msg)[0]
-let media = await downloadContentFromMessage(msg[type], type == 'imageMessage' ? 'image' : 'video')
-let buffer = Buffer.from([])
-for await (const chunk of media) {
-buffer = Buffer.concat([buffer, chunk])}
-vreact()
-if (/video/.test(type)) {
-return Line.sendFile(m.chat, buffer, 'media.mp4', msg[type].caption || '', m)
-} else if (/image/.test(type)) {
-return Line.sendFile(m.chat, buffer, 'media.jpg', msg[type].caption || '', m)
-}
+if (!m.quoted) return m.reply('Kutip pesan view once nya!')
+  if (m.quoted.mtype !== 'viewOnceMessageV2') return m.reply('Ini bukan pesan view-once!')
+  let msg = m.quoted.message
+  let type = Object.keys(msg)[0]
+  let media = await downloadContentFromMessage(msg[type], type == 'imageMessage' ? 'image' : 'video')
+  let buffer = Buffer.from([])
+  for await (const chunk of media) {
+    buffer = Buffer.concat([buffer, chunk])
+  }
+  if (/video/.test(type)) {
+    return Line.sendFile(m.chat, buffer, 'media.mp4', msg[type].caption || '', m)
+  } else if (/image/.test(type)) {
+    return Line.sendFile(m.chat, buffer, 'media.jpg', msg[type].caption || '', m)
+  }
 }
 break
 
@@ -19105,53 +19845,158 @@ break
 
 case 'toaudio':
 case 'tomp3': {
- if (!/video/.test(mime) && !/audio/.test(mime)) return m.reply(`Kirim/kutip vidio/vn dengan caption ${prefix+command}`)
-await vreact()
-let media = await quoted.download()
-let { toAudio } = require('./lib/general/converter')
-let audio = await toAudio(media, 'mp4')
-Line.sendMessage(m.chat, {audio, mimetype: 'audio/mpeg'}, {quoted : m })
+  if (!/video/.test(mime) && !/audio/.test(mime)) return m.reply(`Kirim/kutip vidio/vn dengan caption ${command}`)
+  await vreact()
+  let media = await quoted.download()
+  let {
+    toAudio
+  } = require('./lib/general/exif')
+  let audio = await toAudio(media, 'mp4')
+  Line.sendMessage(m.chat, {
+    audio,
+    mimetype: 'audio/mpeg'
+  }, {
+    quoted: m
+  })
 }
 break
 
 case 'tovn': {
-try {
-if (!/video/.test(mime) && !/audio/.test(mime)) return m.reply(`Kirim/kutip vidio/audio dengan caption ${prefix+command}`)
-await vreact()
-var media = await m.quoted.download()
-let { toAudio } = require('./lib/general/converter')
-let audio = await toAudio(media, 'mp4')
-Line.sendMessage(from, {audio, mimetype:'audio/mpeg', ptt: true}, {quoted: m})
-} catch(err) {
-m.reply('Terjadi kesalahan')
-}}
+  try {
+    if (!/video/.test(mime) && !/audio/.test(mime)) return m.reply(`Kirim/kutip vidio/audio dengan caption ${command}`)
+    await vreact()
+    var media = await m.quoted.download()
+    let {
+      toAudio
+    } = require('./lib/general/exif')
+    let audio = await toAudio(media, 'mp4')
+    Line.sendMessage(from, {
+      audio,
+      mimetype: 'audio/mpeg',
+      ptt: true
+    }, {
+      quoted: m
+    })
+  } catch (err) {
+    m.reply('Terjadi kesalahan')
+  }
+}
 break
 
 case 'translate':
 case 'tr': {
-try {
-if (!text) return m.reply(`Kirim/kutip pesan yang ingin di translate!\nContoh: ${prefix+command} en apa kabar?\n\nen = kode bahasa\nInfo lebih: .listbahasa`)
-let teks = m.quoted ? quoted.text : quoted.text.split(args[0])[1]
-trlt(teks, { to: args[0] }).then((res) => {
-Line.sendText(m.chat, `${res.text}`, m)
-})
-} catch (err) {
-m.reply(`Terjadi kesalahan`)
-}}
+  try {
+    if (!text) {
+      return m.reply(
+        `Kirim atau kutip pesan yang mau di-translate\nContoh: ${p_c}tr en apa kabar?\n\nen = kode bahasa\nInfo lebih: .listbahasa`
+      );
+    }
+    const targetLang = args[0];
+    if (!targetLang) {
+      return m.reply('Tentukan kode bahasanya, contoh: en, id, jp, dll.');
+    }
+    const teks = m.quoted 
+      ? m.quoted.text 
+      : text.split(' ').slice(1).join(' ');
+    if (!teks) {
+      return m.reply('Teks yang mau di-translate tidak ditemukan');
+    }
+    const lines = teks.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+    const translations = await Promise.all(
+      lines.map(async (line) => {
+        const encodedText = Enc(line);
+        const apiUrl = `https://api.siputzx.my.id/api/tools/translate?text=${encodedText}&source=auto&target=${targetLang}`;
+        const response = await fetchJson(apiUrl);
+        return response && response.translatedText ? response.translatedText.trim() : '[Gagal diterjemahkan]';
+      })
+    );
+    const translatedText = translations.join('\n');
+    m.reply(translatedText);
+  } catch (err) {
+    console.error(err);
+    m.reply('Terjadi kesalahan: ' + err);
+  }
+}
 break
 
+case 'langlist':
 case 'listbahasa': {
-try {
-var clear = ["auto", "isSupported", "getCode"]
-var aaa = `List Bahasa Yang Tersedia\n\n`
-for (let i in trlt.languages) {
-if (!clear.includes(i)) {
-teks += `${i}  •>  ${trlt.languages[i]}\n`
-}}
-vreply(aaa)
-} catch(err) {
-m.reply('Terjadi kesalahan')
-}}
+    const tk = `List bahasa yang tersedia:
+
+    af  •>  Afrikaans
+    sq  •>  Albanian
+    am  •>  Amharic
+    ar  •>  Arabic
+    hy  •>  Armenian
+    az  •>  Azerbaijani
+    eu  •>  Basque
+    be  •>  Belarusian
+    bn  •>  Bengali
+    bs  •>  Bosnian
+    bg  •>  Bulgarian
+    ca  •>  Catalan
+    ceb  •>  Cebuano
+    ny  •>  Chichewa
+    zh-CN  •>  Chinese (Simplified)
+    zh-TW  •>  Chinese (Traditional)
+    co  •>  Corsican
+    hr  •>  Croatian
+    cs  •>  Czech
+    da  •>  Danish
+    nl  •>  Dutch
+    en  •>  English
+    eo  •>  Esperanto
+    et  •>  Estonian
+    tl  •>  Filipino
+    fi  •>  Finnish
+    fr  •>  French
+    fy  •>  Frisian
+    gl  •>  Galician
+    ka  •>  Georgian
+    de  •>  German
+    el  •>  Greek
+    gu  •>  Gujarati
+    ht  •>  Haitian Creole
+    ha  •>  Hausa
+    haw  •>  Hawaiian
+    he  •>  Hebrew
+    iw  •>  Hebrew
+    hi  •>  Hindi
+    hmn  •>  Hmong
+    hu  •>  Hungarian
+    is  •>  Icelandic
+    ig  •>  Igbo
+    id  •>  Indonesian
+    ga  •>  Irish
+    it  •>  Italian
+    ja  •>  Japanese
+    jw  •>  Javanese
+    kn  •>  Kannada
+    kk  •>  Kazakh
+    km  •>  Khmer
+    ko  •>  Korean
+    la  •>  Latin
+    ms  •>  Malay
+    my  •>  Myanmar (Burmese)
+    ne  •>  Nepali
+    no  •>  Norwegian
+    pt  •>  Portuguese
+    ro  •>  Romanian
+    ru  •>  Russian
+    sr  •>  Serbian
+    sk  •>  Slovak
+    so  •>  Somali
+    es  •>  Spanish
+    su  •>  Sundanese
+    sw  •>  Swahili
+    sv  •>  Swedish
+    th  •>  Thai
+    tr  •>  Turkish
+    uk  •>  Ukrainian
+    uz  •>  Uzbek
+    vi  •>  Vietnamese`
+    vreply(tk)
+}
 break
             
 case 'toanime':
