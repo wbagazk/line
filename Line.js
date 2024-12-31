@@ -2452,7 +2452,7 @@ id: `${prefix}voicemenu-v`,
 {
 title: "Fun Menu",
 description: "😹 Menampilkan Fun Menu",
-id: `${prefix}funmenu-v`, 
+id: `${prefix}funmenu`, 
 },
 {
 title: "Islamic Menu",
@@ -2462,7 +2462,7 @@ id: `${prefix}islammenu-v`,
 {
 title: "Maker Menu",
 description: "🎨 Menampilkan Maker Menu",
-id: `${prefix}makermenu-v`, 
+id: `${prefix}makermenu`, 
 },
 {
 title: "Linode Menu",
@@ -2479,6 +2479,7 @@ title: "Anime Menu",
 description: "😼 Menampilkan Anime Menu",
 id: `${prefix}animemenu`, 
 },
+{
 title: "Others Menu",
 description: "📪 Menampilkan Others Menu",
 id: `${prefix}othersmenu-v`, 
@@ -3076,7 +3077,7 @@ let dede = `
  • ⏳ ${prefix}kapankah
  • 😎 ${prefix}cekganteng
  • 🌺 ${prefix}cekcantik
-
+ 
 ┏━━━━━━━━━━━━━━━━━━━┓
 ┃      📜 ${monospace("OTHERS MENU")} 📜      
 ┗━━━━━━━━━━━━━━━━━━━┛
@@ -3693,11 +3694,6 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}crypto
  • ${prefix}cerpen
  • ${prefix}andro1
- • ${prefix}liteApks
- • ${prefix}steam
- • ${prefix}genius
- • ${prefix}pixabay
- • ${prefix}srclirik
 
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -3720,6 +3716,51 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}animepic
  • ${prefix}animewall
  • ${prefix}awaifu
+
+Line-v${version} Official Version`
+Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+}
+break
+
+case 'funmenu': {
+vreact()
+let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
+
+乂 ${monospace("FUN MENU")}
+ • ${prefix}apakah
+ • ${prefix}bisakah
+ • ${prefix}kapankah
+ • ${prefix}cekganteng
+ • ${prefix}cekcantik
+ • ${prefix}ceklesbi
+ • ${prefix}cekgay
+ • ${prefix}ceksifat
+ • ${prefix}cekjodoh
+
+Line-v${version} Official Version`
+Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+}
+break
+
+case 'makermenu': {
+vreact()
+let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
+
+乂 ${monospace("MAKER  MENU")}
+ • ${_p}txt2img
+ • ${_p}txt2imgv2
+ • ${_p}txt2imgv3
+ • ${_p}txt2imgv4
+ • ${_p}txt2imgv5
+ • ${_p}txt2imgv6
+ • ${_p}emojimix
+ • ${_p}attp
+ • ${_p}ttp
+ • ${_p}brat
+ • ${_p}blurimg
+ • ${_p}facepalm
+ • ${_p}beautiful
+ • ${_p}textimg
 
 Line-v${version} Official Version`
 Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
@@ -4738,48 +4779,57 @@ getCases(caseNames)
 break
 
 case 'cekcase': {
-if (!isOwner) return onlyOwn();
-if (!text) return m.reply(`Contoh: ${prefix+command} caseName`);
-const caseName = text.trim();
-if (!caseName) return m.reply(`Masukkan nama case yang ingin dicek. Contoh: ${prefix+command} caseName`);
-const cekCase = async (caseName) => {
-try {
-const fileContent = await fs.promises.readFile('./Line.js', "utf-8");
-const caseRegex = new RegExp(`case '${caseName}'[\\s\\S]*?break`, 'g');
-const match = fileContent.match(caseRegex);
-if (!match) {
-return { found: false };
-}
-const lines = fileContent.split('\n');
-const caseLines = match[0].split('\n');
-const startLine = lines.indexOf(caseLines[0]) + 1;
-const endLine = startLine + caseLines.length - 1;
-return {
-found: true,
-startLine,
-endLine,
-content: match[0]
-};
-} catch (error) {
-return { error: `Terjadi kesalahan saat membaca file: ${error.message}` };
-}};
-const result = await cekCase(caseName);
-if (result.error) {
-m.reply(result.error);
-} else if (result.found) {
-const message = `
+  if (!isOwner) return onlyOwn();
+  if (!text) return m.reply(`Contoh: ${p_c} caseName`);
+  const caseName = text.trim();
+  if (!caseName) return m.reply(`Masukkan nama case yang ingin dicek. Contoh: ${p_c} caseName`);
+  const cekCase = async (caseName) => {
+    try {
+      const fileContent = await fs.promises.readFile('./Line.js', "utf-8");
+      const caseRegex = new RegExp(`case '${caseName}'[\\s\\S]*?break`, 'g');
+      const match = fileContent.match(caseRegex);
+      if (!match) {
+        return {
+          found: false
+        };
+      }
+      const lines = fileContent.split('\n');
+      const caseLines = match[0].split('\n');
+      const startLine = lines.indexOf(caseLines[0]) + 1;
+      const endLine = startLine + caseLines.length - 1;
+      return {
+        found: true,
+        startLine,
+        endLine,
+        content: match[0]
+      };
+    } catch (error) {
+      return {
+        error: `Terjadi kesalahan saat membaca file: ${error.message}`
+      };
+    }
+  };
+  const result = await cekCase(caseName);
+  if (result.error) {
+    m.reply(result.error);
+  } else if (result.found) {
+    const message = `
 *CASE DITEMUKAN!*
 • Nama Case: ${caseName}
 • Baris Awal: ${result.startLine}
 • Baris Akhir: ${result.endLine}
 
-Mau sekalian di ambil?`;
-let kon = `{\"display_text\":\"YA\",\"id\":\"${prefix}getcase 1 ${text}\"}`
-quickreply1(m.chat, message, kon, m)
-userSessions[m.sender] = { caseToRetrieve: result, caseName };
-} else {
-m.reply(`Case '${caseName}' tidak ditemukan.`);
-}
+Mau sekalian di ambil?
+Ketik .getcase 1 ${caseName}`
+    let kon = `{\"display_text\":\"YA\",\"id\":\"${p_c}getcase 1 ${text}\"}`
+    quickreply1(m.chat, message, kon, m)
+    userSessions[m.sender] = {
+      caseToRetrieve: result,
+      caseName
+    };
+  } else {
+    m.reply(`Case '${caseName}' tidak ditemukan.`);
+  }
 }
 break
 
@@ -7269,503 +7319,371 @@ break
 case 'wwpc':
 case 'ww':
 case 'werewolf': {
-const resize = async (image, width, height) => {
-const read = await jimp.read(image);
-const data = await read.resize(width, height).getBufferAsync(jimp.MIME_JPEG);
-return data;
-};
-
-let {
-emoji_role,
-sesi,
-playerOnGame,
-playerOnRoom,
-playerExit,
-dataPlayer,
-dataPlayerById,
-getPlayerById,
-getPlayerById2,
-killWerewolf,
-killww,
-dreamySeer,
-sorcerer,
-protectGuardian,
-roleShuffle,
-roleChanger,
-roleAmount,
-roleGenerator,
-addTimer,
-startGame,
-playerHidup,
-playerMati,
-vote,
-voteResult,
-clearAllVote,
-getWinner,
-win,
-pagi,
-malam,
-skill,
-voteStart,
-voteDone,
-voting,
-run,
-run_vote,
-run_malam,
-runprefixagi
-} = require('./lib/game/werewolf.js')
-
-// [ Thumbnail ] 
-let thumb =
-"https://user-images.githubusercontent.com/72728486/235316834-f9f84ba0-8df3-4444-81d8-db5270995e6d.jpg";
-
-const {
-sender,
-chat
-} = m;
-Line.werewolf = Line.werewolf ? Line.werewolf : {};
-const ww = Line.werewolf ? Line.werewolf : {};
-const data = ww[chat];
-const value = args[0];
-const target = args[1];
-let byId = getPlayerById2(sender, parseInt(target), ww); 
-// [ Membuat Room ]
-if (value === "create") {
-if (chat in ww) return m.reply("Group masih dalam sesi permainan");
-if (playerOnGame(sender, ww) === true)
-return m.reply("Kamu masih dalam sesi game");
-ww[chat] = {
-room: chat,
-owner: sender,
-status: false,
-iswin: null,
-cooldown: null,
-day: 0,
-time: "malem",
-player: [],
-dead: [],
-voting: false,
-seer: false,
-guardian: [],
-};
-await m.reply("Room berhasil dibuat, ketik *.ww join* untuk bergabung");
-
-// [ Join sesi permainan ]
-} else if (value === "join") {
-if (!ww[chat]) return m.reply("Belum ada sesi permainan");
-if (ww[chat].status === true)
-return m.reply("Sesi permainan sudah dimulai");
-if (ww[chat].player.length > 16)
-return m.reply("Maaf jumlah player telah penuh");
-if (playerOnRoom(sender, chat, ww) === true)
-return m.reply("Kamu sudah join dalam room ini");
-if (playerOnGame(sender, ww) === true)
-return m.reply("Kamu masih dalam sesi game");
-let data = {
-id: sender,
-number: ww[chat].player.length + 1,
-sesi: chat,
-status: false,
-role: false,
-effect: [],
-vote: 0,
-isdead: false,
-isvote: false,
-};
-ww[chat].player.push(data);
-let player = [];
-let text = `\n*⌂ W E R E W O L F - P L A Y E R*\n\n`;
-for (let i = 0; i < ww[chat].player.length; i++) {
-text += `${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace(
-"@s.whatsapp.net",
-""
-)}\n`;
-player.push(ww[chat].player[i].id);
+	let {
+		emoji_role,
+		sesi,
+		playerOnGame,
+		playerOnRoom,
+		playerExit,
+		dataPlayer,
+		dataPlayerById,
+		getPlayerById,
+		getPlayerById2,
+		killWerewolf,
+		killww,
+		dreamySeer,
+		sorcerer,
+		protectGuardian,
+		roleShuffle,
+		roleChanger,
+		roleAmount,
+		roleGenerator,
+		addTimer,
+		startGame,
+		playerHidup,
+		playerMati,
+		vote,
+		voteResult,
+		clearAllVote,
+		getWinner,
+		win,
+		pagi,
+		malam,
+		skill,
+		voteStart,
+		voteDone,
+		voting,
+		run,
+		run_vote,
+		run_malam,
+		runprefixagi
+	} = require('./lib/game/werewolf')
+	let thumb = "https://user-images.githubusercontent.com/72728486/235316834-f9f84ba0-8df3-4444-81d8-db5270995e6d.jpg";
+	const {
+		sender,
+		chat
+	} = m;
+	Line.werewolf = Line.werewolf ? Line.werewolf : {};
+	const ww = Line.werewolf ? Line.werewolf : {};
+	const data = ww[chat];
+	const value = args[0];
+	const target = args[1];
+	let byId = getPlayerById2(sender, parseInt(target), ww);
+	if (value === "create") {
+		if (!m.isGroup) return onlyGrup()
+		if (chat in ww) return m.reply("Group masih dalam sesi permainan");
+		if (playerOnGame(sender, ww) === true) return m.reply("Kamu masih dalam sesi game");
+		ww[chat] = {
+			room: chat,
+			owner: sender,
+			status: false,
+			iswin: null,
+			cooldown: null,
+			day: 0,
+			time: "malem",
+			player: [],
+			dead: [],
+			voting: false,
+			seer: false,
+			guardian: [],
+		};
+		await m.reply("Room berhasil dibuat, ketik *.ww join* untuk bergabung");
+	} else if (value === "join") {
+		if (!m.isGroup) return onlyGrup()
+		if (!ww[chat]) return m.reply("Belum ada sesi permainan");
+		if (ww[chat].status === true) return m.reply("Sesi permainan sudah dimulai");
+		if (ww[chat].player.length > 16) return m.reply("Maaf jumlah player telah penuh");
+		if (playerOnRoom(sender, chat, ww) === true) return m.reply("Kamu sudah join dalam room ini");
+		if (playerOnGame(sender, ww) === true) return m.reply("Kamu masih dalam sesi game");
+		let data = {
+			id: sender,
+			number: ww[chat].player.length + 1,
+			sesi: chat,
+			status: false,
+			role: false,
+			effect: [],
+			vote: 0,
+			isdead: false,
+			isvote: false,
+		};
+		ww[chat].player.push(data);
+		let player = [];
+		let text = `\n*⌂ W E R E W O L F - P L A Y E R*\n\n`;
+		for (let i = 0; i < ww[chat].player.length; i++) {
+			text += `${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace("@s.whatsapp.net", "")}\n`;
+			player.push(ww[chat].player[i].id);
+		}
+		text += "\nJumlah player minimal adalah 5 dan maximal 15";
+		Line.sendMessage(m.chat, {
+			text: text.trim(),
+			contextInfo: {
+				externalAdReply: {
+					title: "W E R E W O L F",
+					mediaType: 1,
+					renderLargerThumbnail: true,
+					thumbnail: await resize(thumb, 300, 175),
+					sourceUrl: "https://whatsapp.com/channel/0029Vaf0HPMLdQeZsp3XRp2T",
+					mediaUrl: thumb,
+				},
+				mentionedJid: player,
+			},
+		}, {
+			quoted: m
+		});
+	} else if (value === "start") {
+		if (!m.isGroup) return onlyGrup()
+		if (!ww[chat]) return m.reply("Belum ada sesi permainan");
+		if (ww[chat].player.length === 0) return m.reply("Room belum memiliki player");
+		if (ww[chat].player.length < 5) return m.reply("Maaf jumlah player belum memenuhi syarat");
+		if (playerOnRoom(sender, chat, ww) === false) return m.reply("Kamu belum join dalam room ini");
+		if (ww[chat].cooldown > 0) {
+			if (ww[chat].time === "voting") {
+				clearAllVote(chat, ww);
+				addTimer(chat, ww);
+				return await run_vote(vioo, chat, ww);
+			} else if (ww[chat].time === "malem") {
+				clearAllVote(chat, ww);
+				addTimer(chat, ww);
+				return await run_malam(vioo, chat, ww);
+			} else if (ww[chat].time === "pagi") {
+				clearAllVote(chat, ww);
+				addTimer(chat, ww);
+				return await runprefixagi(vioo, chat, ww);
+			}
+		}
+		if (ww[chat].status === true) return m.reply("Sesi permainan telah dimulai");
+		if (ww[chat].owner !== sender) return m.reply(`Hanya @${ww[chat].owner.split("@")[0]} yang dapat memulai permainan`);
+		let list1 = "";
+		let list2 = "";
+		let player = [];
+		roleGenerator(chat, ww);
+		addTimer(chat, ww);
+		startGame(chat, ww);
+		for (let i = 0; i < ww[chat].player.length; i++) {
+			list1 += `(${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace("@s.whatsapp.net", "")}\n`;
+			player.push(ww[chat].player[i].id);
+		}
+		for (let i = 0; i < ww[chat].player.length; i++) {
+			list2 += `(${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace("@s.whatsapp.net", "")} ${ww[chat].player[i].role === "werewolf" || ww[chat].player[i].role === "sorcerer" ? `[${ww[chat].player[i].role}]` : ""}\n`;
+			player.push(ww[chat].player[i].id);
+		}
+		for (let i = 0; i < ww[chat].player.length; i++) {
+			if (ww[chat].player[i].role === "werewolf") {
+				if (ww[chat].player[i].isdead != true) {
+					var textt = `Hai ${Line.getName(ww[chat].player[i].id)}, Kamu telah dipilih untuk memerankan *Werewolf* ${emoji_role("werewolf")} pada permainan kali ini, silahkan pilih salah satu player yang ingin kamu makan pada malam hari ini\n*LIST PLAYER*:\n${list2}\n\nKetik *.wwpc kill nomor* untuk membunuh player`;
+					await Line.sendMessage(ww[chat].player[i].id, {
+						text: textt,
+						mentions: player,
+					});
+				}
+			} else if (ww[chat].player[i].role === "warga") {
+				if (ww[chat].player[i].isdead != true) {
+					let texttt = `*⌂ W E R E W O L F - G A M E*\n\nHai ${Line.getName(ww[chat].player[i].id)} Peran kamu adalah *Warga Desa* ${emoji_role("warga")}, tetap waspada, mungkin *Werewolf* akan memakanmu malam ini, silakan masuk kerumah masing masing.\n*LIST PLAYER*:\n${list1}`;
+					await Line.sendMessage(ww[chat].player[i].id, {
+						text: texttt,
+						mentions: player,
+					});
+				}
+			} else if (ww[chat].player[i].role === "seer") {
+				if (ww[chat].player[i].isdead != true) {
+					let texxt = `Hai ${Line.getName(ww[chat].player[i].id)} Kamu telah terpilih untuk menjadi *Penerawang* ${emoji_role("seer")}. Dengan sihir yang kamu punya, kamu bisa mengetahui peran pemain pilihanmu.\n*LIST PLAYER*:\n${list1}\n\nKetik *.wwpc dreamy nomor* untuk melihat role player`;
+					await Line.sendMessage(ww[chat].player[i].id, {
+						text: texxt,
+						mentions: player,
+					});
+				}
+			} else if (ww[chat].player[i].role === "guardian") {
+				if (ww[chat].player[i].isdead != true) {
+					let teext = `Hai ${Line.getName(ww[chat].player[i].id)} Kamu terpilih untuk memerankan *Malaikat Pelindung* ${emoji_role("guardian")}, dengan kekuatan yang kamu miliki, kamu bisa melindungi para warga, silahkan pilih salah 1 player yang ingin kamu lindungi\n*LIST PLAYER*:\n${list1}\n\nKetik *.wwpc deff nomor* untuk melindungi player`;
+					await Line.sendMessage(ww[chat].player[i].id, {
+						text: teext,
+						mentions: player,
+					});
+				}
+			} else if (ww[chat].player[i].role === "sorcerer") {
+				if (ww[chat].player[i].isdead != true) {
+					let textu = `Hai ${Line.getName(ww[chat].player[i].id)} Kamu terpilih sebagai Penyihir ${emoji_role("sorcerer")}, dengan kekuasaan yang kamu punya, kamu bisa membuka identitas para player, silakan pilih 1 orang yang ingin kamu buka identitasnya\n*LIST PLAYER*:\n${list2}\n\nKetik *.wwpc sorcerer nomor* untuk melihat role player`;
+					await Line.sendMessage(ww[chat].player[i].id, {
+						text: textu,
+						mentions: player,
+					});
+				}
+			}
+		}
+		await Line.sendMessage(m.chat, {
+			text: "*⌂ W E R E W O L F - G A M E*\n\nGame telah dimulai, para player akan memerankan perannya masing masing, silahkan cek chat pribadi untuk melihat role kalian. Berhati-hatilah para warga, mungkin malam ini adalah malah terakhir untukmu",
+			contextInfo: {
+				externalAdReply: {
+					title: "W E R E W O L F",
+					mediaType: 1,
+					renderLargerThumbnail: true,
+					thumbnail: await resize(thumb, 300, 175),
+					sourceUrl: "https://whatsapp.com/channel/0029Vaf0HPMLdQeZsp3XRp2T",
+					mediaUrl: thumb,
+				},
+				mentionedJid: player,
+			},
+		});
+		await run(vioo, chat, ww);
+	} else if (value === "kill") {
+	    let byId = getPlayerById2(sender, parseInt(target), ww);
+		if (dataPlayer(sender, ww).role !== "werewolf") return m.reply("Peran ini bukan untuk kamu");
+		if (byId.db.role === "sorcerer") return m.reply("Tidak bisa menggunakan skill untuk teman");
+		if (playerOnGame(sender, ww) === false) return m.reply("Kamu tidak dalam sesi game")
+		if (dataPlayer(sender, ww).status === true) return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
+		if (dataPlayer(sender, ww).isdead === true) return m.reply("Kamu sudah mati")
+		if (!target || target.length < 1 || target.split('').length > 2) return m.reply(`Masukan nomor player \nContoh : \n${p_c} kill 1`)
+		if (isNaN(target)) return m.reply("Gunakan hanya nomor")
+		if (byId.db.isdead === true) return m.reply("Player sudah mati")
+		if (byId.db.id === sender) return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
+		if (byId === false) return m.reply("Player tidak terdaftar")
+		reply("Berhasil membunuh player " + parseInt(target)).then(() => {
+			dataPlayer(sender, ww).status = true;
+			killWerewolf(sender, parseInt(target), ww);
+		});
+	} else if (value === "dreamy") {
+		if (dataPlayer(sender, ww).role !== "seer") return m.reply("Peran ini bukan untuk kamu");
+		if (playerOnGame(sender, ww) === false) return m.reply("Kamu tidak dalam sesi game")
+		if (dataPlayer(sender, ww).status === true) return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
+		if (dataPlayer(sender, ww).isdead === true) return m.reply("Kamu sudah mati")
+		if (!target || target.length < 1 || target.split('').length > 2) return m.reply(`Masukan nomor player \nContoh: ${p_c} kill 1`)
+		if (isNaN(target)) return m.reply("Gunakan hanya nomor")
+		let byId = getPlayerById2(sender, parseInt(target), ww)
+		if (byId.db.isdead === true) return m.reply("Player sudah mati")
+		if (byId.db.id === sender) return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
+		if (byId === false) return m.reply("Player tidak terdaftar")
+		let dreamy = dreamySeer(m.sender, parseInt(target), ww);
+		reply(`Berhasil membuka identitas player ${target} adalah ${dreamy}`).then(() => {
+			dataPlayer(sender, ww).status = true;
+		});
+	} else if (value === "deff") {
+		if (dataPlayer(sender, ww).role !== "guardian") return m.reply("Peran ini bukan untuk kamu");
+		if (playerOnGame(sender, ww) === false) return m.reply("Kamu tidak dalam sesi game")
+		if (dataPlayer(sender, ww).status === true) return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
+		if (dataPlayer(sender, ww).isdead === true) return m.reply("Kamu sudah mati")
+		if (!target || target.length < 1 || target.split('').length > 2) return m.reply(`Masukan nomor player \nContoh: ${p_c} kill 1`)
+		if (isNaN(target)) return m.reply("Gunakan hanya nomor")
+		let byId = getPlayerById2(sender, parseInt(target), ww)
+		if (byId.db.isdead === true) return m.reply("Player sudah mati")
+		if (byId.db.id === sender) return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
+		if (byId === false) return m.reply("Player tidak terdaftar")
+		reply(`Berhasil melindungi player ${target}`).then(() => {
+			protectGuardian(m.sender, parseInt(target), ww);
+			dataPlayer(sender, ww).status = true;
+		});
+	} else if (value === "sorcerer") {
+		if (dataPlayer(sender, ww).role !== "sorcerer") return m.reply("Peran ini bukan untuk kamu");
+		if (playerOnGame(sender, ww) === false) return m.reply("Kamu tidak dalam sesi game")
+		if (dataPlayer(sender, ww).status === true) return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
+		if (dataPlayer(sender, ww).isdead === true) return m.reply("Kamu sudah mati")
+		if (!target || target.length < 1 || target.split('').length > 2) return m.reply(`Masukan nomor player \nContoh: ${p_c} kill 1`)
+		if (isNaN(target)) return m.reply("Gunakan hanya nomor")
+		let byId = getPlayerById2(sender, parseInt(target), ww)
+		if (byId.db.isdead === true) return m.reply("Player sudah mati")
+		if (byId.db.id === sender) return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
+		if (byId === false) return m.reply("Player tidak terdaftar")
+		let sorker = sorcerer(sesi(m.sender), target);
+		reply(`Berhasil membuka identitas player ${player} adalah ${sorker}`).then(() => {
+			dataPlayer(sender, ww).status = true;
+		});
+	} else if (value === "vote") {
+		if (!m.isGroup) return onlyGrup()
+		if (!ww[chat]) return m.reply("Belum ada sesi permainan");
+		if (ww[chat].status === false) return m.reply("Sesi permainan belum dimulai");
+		if (ww[chat].time !== "voting") return m.reply("Sesi voting belum dimulai");
+		if (playerOnRoom(sender, chat, ww) === false) return m.reply("Kamu bukan player");
+		if (dataPlayer(sender, ww).isdead === true) return m.reply("Kamu sudah mati");
+		if (!target || target.length < 1) return m.reply("Masukan nomor player");
+		if (isNaN(target)) return m.reply("Gunakan hanya nomor");
+		if (dataPlayer(sender, ww).isvote === true) return m.reply("Kamu sudah melakukan voting");
+		b = getPlayerById(chat, sender, parseInt(target), ww);
+		if (b.db.isdead === true) return m.reply(`Player ${target} sudah mati.`);
+		if (ww[chat].player.length < parseInt(target)) return m.reply("Invalid");
+		if (getPlayerById(chat, sender, parseInt(target), ww) === false) return m.reply("Player tidak terdaftar!");
+		vote(chat, parseInt(target), sender, ww);
+		return m.reply("Vote ✓");
+	} else if (value == "exit") {
+		if (!m.isGroup) return onlyGrup()
+		if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
+		if (playerOnRoom(sender, chat, ww) === false) return m.reply("Kamu tidak dalam sesi permainan");
+		if (ww[chat].status === true) return m.reply("Permainan sudah dimulai, kamu tidak bisa keluar");
+		let exitww = `${sender.split("@")[0]} Keluar dari permainan`
+		Line.sendMessage(m.chat, {
+			text: exitww,
+			contextInfo: {
+				externalAdReply: {
+					title: "W E R E W O L F",
+					mediaType: 1,
+					renderLargerThumbnail: true,
+					thumbnail: await resize(thumb, 300, 175),
+					sourceUrl: "https://whatsapp.com/channel/0029Vaf0HPMLdQeZsp3XRp2T",
+					mediaUrl: thumb,
+				},
+				mentionedJid: sender,
+			},
+		}, {
+			quoted: m
+		});
+		playerExit(chat, sender, ww);
+	} else if (value === "delete") {
+		if (!m.isGroup) return onlyGrup()
+		if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
+		if (ww[chat].owner !== sender) return m.reply(`Hanya @${ww[chat].owner.split("@")[0]} yang dapat menghapus sesi permainan ini`);
+		reply("Sesi permainan berhasil dihapus").then(() => {
+			delete ww[chat];
+		});
+	} else if (value === "player") {
+		if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
+		if (playerOnRoom(sender, chat, ww) === false) return m.reply("Kamu tidak dalam sesi permainan");
+		if (ww[chat].player.length === 0) return m.reply("Sesi permainan belum memiliki player");
+		let player = [];
+		let text = "\n*⌂ W E R E W O L F - G A M E*\n\nLIST PLAYER:\n";
+		for (let i = 0; i < ww[chat].player.length; i++) {
+			text += `(${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace("@s.whatsapp.net", "")} ${ww[chat].player[i].isdead === true ? `☠️ ${ww[chat].player[i].role}` : ""}\n`;
+			player.push(ww[chat].player[i].id);
+		}
+		Line.sendMessage(m.chat, {
+			text: text,
+			contextInfo: {
+				externalAdReply: {
+					title: "W E R E W O L F",
+					mediaType: 1,
+					renderLargerThumbnail: true,
+					thumbnail: await resize(thumb, 300, 175),
+					sourceUrl: "https://whatsapp.com/channel/0029Vaf0HPMLdQeZsp3XRp2T",
+					mediaUrl: thumb,
+				},
+				mentionedJid: player,
+			},
+		}, {
+			quoted: m
+		});
+	} else {
+		let text = `\n*⌂ W E R E W O L F - G A M E*\n\nPermainan Sosial Yang Berlangsung Dalam Beberapa Putaran/ronde. Para Pemain Dituntut Untuk Mencari Seorang Penjahat Yang Ada Dipermainan. Para Pemain Diberi Waktu, Peran, Serta Kemampuannya Masing-masing Untuk Bermain Permainan Ini\n\n*⌂ C O M M A N D*\n`;
+		text += ` • ww create\n`;
+		text += ` • ww join\n`;
+		text += ` • ww start\n`;
+		text += ` • ww exit\n`;
+		text += ` • ww delete\n`;
+		text += ` • ww player\n`;
+		text += `\nPermainan ini dapat dimainkan oleh 5 sampai 15 orang.`;
+		Line.sendMessage(m.chat, {
+			text: text.trim(),
+			contextInfo: {
+				externalAdReply: {
+					title: "W E R E W O L F",
+					mediaType: 1,
+					renderLargerThumbnail: true,
+					thumbnail: await resize(thumb, 300, 175),
+					sourceUrl: web,
+					mediaUrl: thumb,
+				},
+			},
+		}, {
+			quoted: m
+		});
+	}
 }
-text += "\nJumlah player minimal adalah 5 dan maximal 15";
-Line.sendMessage(
-m.chat, {
-text: text.trim(),
-contextInfo: {
-externalAdReply: {
-title: "W E R E W O L F",
-mediaType: 1,
-renderLargerThumbnail: true,
-thumbnail: await resize(thumb, 300, 175),
-sourceUrl: web,
-mediaUrl: thumb,
-},
-mentionedJid: player,
-},
-}, {
-quoted: m
-}
-);
-// [ Game Play ]
-} else if (value === "start") {
-if (!ww[chat]) return m.reply("Belum ada sesi permainan");
-if (ww[chat].player.length === 0)
-return m.reply("Room belum memiliki player");
-if (ww[chat].player.length < 5)
-return m.reply("Maaf jumlah player belum memenuhi syarat");
-if (playerOnRoom(sender, chat, ww) === false)
-return m.reply("Kamu belum join dalam room ini");
-if (ww[chat].cooldown > 0) {
-if (ww[chat].time === "voting") {
-clearAllVote(chat, ww);
-addTimer(chat, ww);
-return await run_vote(Line. chat, ww);
-} else if (ww[chat].time === "malem") {
-clearAllVote(chat, ww);
-addTimer(chat, ww);
-return await run_malam(Line. chat, ww);
-} else if (ww[chat].time === "pagi") {
-clearAllVote(chat, ww);
-addTimer(chat, ww);
-return await runprefixagi(Line. chat, ww);
-}
-}
-if (ww[chat].status === true)
-return m.reply("Sesi permainan telah dimulai");
-if (ww[chat].owner !== sender)
-return m.reply(
-`Hanya @${ww[chat].owner.split("@")[0]} yang dapat memulai permainan`
-);
-let list1 = "";
-let list2 = "";
-let player = [];
-roleGenerator(chat, ww);
-addTimer(chat, ww);
-startGame(chat, ww);
-for (let i = 0; i < ww[chat].player.length; i++) {
-list1 += `(${ww[chat].player[i].number}) @${ww[chat].player[
-i
-].id.replace("@s.whatsapp.net", "")}\n`;
-player.push(ww[chat].player[i].id);
-}
-for (let i = 0; i < ww[chat].player.length; i++) {
-list2 += `(${ww[chat].player[i].number}) @${ww[chat].player[
-i
-].id.replace("@s.whatsapp.net", "")} ${
-ww[chat].player[i].role === "werewolf" ||
-ww[chat].player[i].role === "sorcerer"
-? `[${ww[chat].player[i].role}]`
-: ""
-}\n`;
-player.push(ww[chat].player[i].id);
-}
-for (let i = 0; i < ww[chat].player.length; i++) {
-// [ Werewolf ]
-if (ww[chat].player[i].role === "werewolf") {
-if (ww[chat].player[i].isdead != true) {
-var textt = `Hai ${Line.getName(
-ww[chat].player[i].id
-)}, Kamu telah dipilih untuk memerankan *Werewolf* ${emoji_role(
-"werewolf"
-)} pada permainan kali ini, silahkan pilih salah satu player yang ingin kamu makan pada malam hari ini\n*LIST PLAYER*:\n${list2}\n\nKetik *.wwpc kill nomor* untuk membunuh player`;
-await Line.sendMessage(ww[chat].player[i].id, {
-text: textt,
-mentions: player,
-});
-}
-// [ villager ]
-} else if (ww[chat].player[i].role === "warga") {
-if (ww[chat].player[i].isdead != true) {
-let texttt = `*⌂ W E R E W O L F - G A M E*\n\nHai ${Line.getName(
-ww[chat].player[i].id
-)} Peran kamu adalah *Warga Desa* ${emoji_role(
-"warga"
-)}, tetap waspada, mungkin *Werewolf* akan memakanmu malam ini, silakan masuk kerumah masing masing.\n*LIST PLAYER*:\n${list1}`;
-await Line.sendMessage(ww[chat].player[i].id, {
-text: texttt,
-mentions: player,
-});
-}
-
-// [ Penerawangan ]
-} else if (ww[chat].player[i].role === "seer") {
-if (ww[chat].player[i].isdead != true) {
-let texxt = `Hai ${Line.getName(
-ww[chat].player[i].id
-)} Kamu telah terpilih  untuk menjadi *Penerawang* ${emoji_role(
-"seer"
-)}. Dengan sihir yang kamu punya, kamu bisa mengetahui peran pemain pilihanmu.\n*LIST PLAYER*:\n${list1}\n\nKetik *.wwpc dreamy nomor* untuk melihat role player`;
-
-await Line.sendMessage(ww[chat].player[i].id, {
-text: texxt,
-mentions: player,
-});
-}
-
-// [ Guardian ]
-} else if (ww[chat].player[i].role === "guardian") {
-if (ww[chat].player[i].isdead != true) {
-let teext = `Hai ${Line.getName(
-ww[chat].player[i].id
-)} Kamu terpilih untuk memerankan *Malaikat Pelindung* ${emoji_role(
-"guardian"
-)}, dengan kekuatan yang kamu miliki, kamu bisa melindungi para warga, silahkan pilih salah 1 player yang ingin kamu lindungi\n*LIST PLAYER*:\n${list1}\n\nKetik *.wwpc deff nomor* untuk melindungi player`;
-  
-await Line.sendMessage(ww[chat].player[i].id, {
-text: teext,
-mentions: player,
-});
-}
-
-// [ Sorcerer ]
-} else if (ww[chat].player[i].role === "sorcerer") {
-if (ww[chat].player[i].isdead != true) {
-let textu = `Hai ${Line.getName(
-ww[chat].player[i].id
-)} Kamu terpilih sebagai Penyihir ${emoji_role(
-"sorcerer"
-)}, dengan kekuasaan yang kamu punya, kamu bisa membuka identitas para player, silakan pilih 1 orang yang ingin kamu buka identitasnya\n*LIST PLAYER*:\n${list2}\n\nKetik *.wwpc sorcerer nomor* untuk melihat role player`;
-
-await Line.sendMessage(ww[chat].player[i].id, {
-text: textu,
-mentions: player,
-});
-}
-}
-}
-await Line.sendMessage(m.chat, {
-text: "*⌂ W E R E W O L F - G A M E*\n\nGame telah dimulai, para player akan memerankan perannya masing masing, silahkan cek chat pribadi untuk melihat role kalian. Berhati-hatilah para warga, mungkin malam ini adalah malah terakhir untukmu",
-contextInfo: {
-externalAdReply: {
-title: "W E R E W O L F",
-mediaType: 1,
-renderLargerThumbnail: true,
-thumbnail: await resize(thumb, 300, 175),
-sourceUrl: web,
-mediaUrl: thumb,
-},
-mentionedJid: player,
-},
-});
-await run(Line. chat, ww);
-} else if (value === "kill") {
-let byId = getPlayerById2(sender, parseInt(target), ww)
-if (dataPlayer(sender, ww).role !== "werewolf") 
-return m.reply("Peran ini bukan untuk kamu"); 
-if (byId.db.data.role === "sorcerer") 
-return m.reply("Tidak bisa menggunakan skill untuk teman"); 
-if (playerOnGame(sender, ww) === false)
-return m.reply("Kamu tidak dalam sesi game")
-if (dataPlayer(sender, ww).status === true)
-return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
-if (dataPlayer(sender, ww).isdead === true)
-return m.reply("Kamu sudah mati")
-if (!target || target.length < 1 || target.split('').length > 2) 
-return m.reply(`Masukan nomor player \nContoh : \n${prefix+command} kill 1`)
-if (isNaN(target)) 
-return m.reply("Gunakan hanya nomor")
-if (byId.db.data.isdead === true) 
-return m.reply("Player sudah mati")
-if (byId.db.data.id === sender)
-return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
-if (byId === false) 
-return m.reply("Player tidak terdaftar")
-m.reply("Berhasil membunuh player " + parseInt(target)) 
-.then(() => { 
-dataPlayer(sender, ww).status = true; 
-killWerewolf(sender, parseInt(target), ww); 
-}); 
-} else if (value === "dreamy") { 
-if (dataPlayer(sender, ww).role !== "seer") 
-return m.reply("Peran ini bukan untuk kamu"); 
-if (playerOnGame(sender, ww) === false)
-return m.reply("Kamu tidak dalam sesi game")
-if (dataPlayer(sender, ww).status === true)
-return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
-if (dataPlayer(sender, ww).isdead === true)
-return m.reply("Kamu sudah mati")
-if (!target || target.length < 1 || target.split('').length > 2) 
-return m.reply(`Masukan nomor player \nContoh : \n${prefix+command} kill 1`)
-if (isNaN(target)) 
-return m.reply("Gunakan hanya nomor")
-let byId = getPlayerById2(sender, parseInt(target), ww)
-if (byId.db.data.isdead === true) 
-return m.reply("Player sudah mati")
-if (byId.db.data.id === sender)
-return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
-if (byId === false) 
-return m.reply("Player tidak terdaftar")
-let dreamy = dreamySeer(sender, parseInt(target), ww); 
-m.reply(`Berhasil membuka identitas player ${target} adalah ${dreamy}`) 
-.then(() => { 
-dataPlayer(sender, ww).status = true; 
-}); 
-} else if (value === "deff") { 
-if (dataPlayer(sender, ww).role !== "guardian") 
-return m.reply("Peran ini bukan untuk kamu"); 
-if (playerOnGame(sender, ww) === false)
-return m.reply("Kamu tidak dalam sesi game")
-if (dataPlayer(sender, ww).status === true)
-return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
-if (dataPlayer(sender, ww).isdead === true)
-return m.reply("Kamu sudah mati")
-if (!target || target.length < 1 || target.split('').length > 2) 
-return m.reply(`Masukan nomor player \nContoh : \n${prefix+command} kill 1`)
-if (isNaN(target)) 
-return m.reply("Gunakan hanya nomor")
-let byId = getPlayerById2(sender, parseInt(target), ww)
-if (byId.db.data.isdead === true) 
-return m.reply("Player sudah mati")
-if (byId.db.data.id === sender)
-return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
-if (byId === false) 
-return m.reply("Player tidak terdaftar")
-m.reply(`Berhasil melindungi player ${target}`).then(() => { 
-protectGuardian(sender, parseInt(target), ww); 
-dataPlayer(sender, ww).status = true; 
-}); 
-} else if (value === "sorcerer") { 
-if (dataPlayer(sender, ww).role !== "sorcerer") 
-return m.reply("Peran ini bukan untuk kamu"); 
-if (playerOnGame(sender, ww) === false)
-return m.reply("Kamu tidak dalam sesi game")
-if (dataPlayer(sender, ww).status === true)
-return m.reply("Skill telah digunakan, skill hanya bisa digunakan sekali setiap malam")
-if (dataPlayer(sender, ww).isdead === true)
-return m.reply("Kamu sudah mati")
-if (!target || target.length < 1 || target.split('').length > 2) 
-return m.reply(`Masukan nomor player \nContoh : \n${prefix+command} kill 1`)
-if (isNaN(target)) 
-return m.reply("Gunakan hanya nomor")
-let byId = getPlayerById2(sender, parseInt(target), ww)
-if (byId.db.data.isdead === true) 
-return m.reply("Player sudah mati")
-if (byId.db.data.id === sender)
-return m.reply("Tidak bisa menggunakan skill untuk diri sendiri")
-if (byId === false) 
-return m.reply("Player tidak terdaftar")
-let sorker = sorcerer(sesi(sender), target); 
-m.reply(`Berhasil membuka identitas player ${player} adalah ${sorker}`) 
-.then(() => { 
-dataPlayer(sender, ww).status = true; 
-}); 
-} else if (value === "vote") {
-if (!ww[chat]) return m.reply("Belum ada sesi permainan");
-if (ww[chat].status === false)
-return m.reply("Sesi permainan belum dimulai");
-if (ww[chat].time !== "voting")
-return m.reply("Sesi voting belum dimulai");
-if (playerOnRoom(sender, chat, ww) === false)
-return m.reply("Kamu bukan player");
-if (dataPlayer(sender, ww).isdead === true)
-return m.reply("Kamu sudah mati");
-if (!target || target.length < 1)
-return m.reply("Masukan nomor player");
-if (isNaN(target)) return m.reply("Gunakan hanya nomor");
-if (dataPlayer(sender, ww).isvote === true)
-return m.reply("Kamu sudah melakukan voting");
-b = getPlayerById(chat, sender, parseInt(target), ww);
-if (b.db.data.isdead === true)
-return m.reply(`Player ${target} sudah mati.`);
-if (ww[chat].player.length < parseInt(target))
-return m.reply("Invalid");
-if (getPlayerById(chat, sender, parseInt(target), ww) === false)
-return m.reply("Player tidak terdaftar!");
-vote(chat, parseInt(target), sender, ww);
-return m.reply("✅ Vote");
-} else if (value == "exit") {
-if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
-if (playerOnRoom(sender, chat, ww) === false)
-return m.reply("Kamu tidak dalam sesi permainan");
-if (ww[chat].status === true)
-return m.reply("Permainan sudah dimulai, kamu tidak bisa keluar");
-let exitww = `${m.sender.split("@")[0]} Keluar dari permainan`
-Line.sendMessage(
-m.chat, {
-text: exitww,
-contextInfo: {
-externalAdReply: {
-title: "W E R E W O L F",
-mediaType: 1,
-renderLargerThumbnail: true,
-thumbnail: await resize(thumb, 300, 175),
-sourceUrl: web,
-mediaUrl: thumb,
-},
-mentionedJid: sender,
-},
-}, {
-quoted: m
-}
-);  
-playerExit(chat, sender, ww);
-} else if (value === "delete") {
-if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
-if (ww[chat].owner !== sender)
-return m.reply(
-`Hanya @${
-ww[chat].owner.split("@")[0]
-} yang dapat menghapus sesi permainan ini`
-);
-m.reply("Sesi permainan berhasil dihapus").then(() => {
-delete ww[chat];
-});
-} else if (value === "player") {
-if (!ww[chat]) return m.reply("Tidak ada sesi permainan");
-if (playerOnRoom(sender, chat, ww) === false)
-return m.reply("Kamu tidak dalam sesi permainan");
-if (ww[chat].player.length === 0)
-return m.reply("Sesi permainan belum memiliki player");
-let player = [];
-let text = "\n*⌂ W E R E W O L F - G A M E*\n\nLIST PLAYER:\n";
-for (let i = 0; i < ww[chat].player.length; i++) {
-text += `(${ww[chat].player[i].number}) @${ww[chat].player[i].id.replace(
-"@s.whatsapp.net",
-""
-)} ${
-ww[chat].player[i].isdead === true
-? `☠️ ${ww[chat].player[i].role}`
-: ""
-}\n`;
-player.push(ww[chat].player[i].id);
-}
-Line.sendMessage(
-m.chat, {
-text: text,
-contextInfo: {
-externalAdReply: {
-title: "W E R E W O L F",
-mediaType: 1,
-renderLargerThumbnail: true,
-thumbnail: await resize(thumb, 300, 175),
-sourceUrl: web,
-mediaUrl: thumb,
-},
-mentionedJid: player,
-},
-}, {
-quoted: m
-}
-);
-} else {
-let text = `\n*⌂ W E R E W O L F - G A M E*\n\nPermainan Sosial Yang Berlangsung Dalam Beberapa Putaran/ronde. Para Pemain Dituntut Untuk Mencari Seorang Penjahat Yang Ada Dipermainan. Para Pemain Diberi Waktu, Peran, Serta Kemampuannya Masing-masing Untuk Bermain Permainan Ini\n\n*⌂ C O M M A N D*\n`;
-text += ` • ww create\n`;
-text += ` • ww join\n`;
-text += ` • ww start\n`;
-text += ` • ww exit\n`;
-text += ` • ww delete\n`;
-text += ` • ww player\n`;
-text += `\nPermainan ini dapat dimainkan oleh 5 sampai 15 orang.`;
-Line.sendMessage(
-m.chat, {
-text: text.trim(),
-contextInfo: {
-externalAdReply: {
-title: "W E R E W O L F",
-mediaType: 1,
-renderLargerThumbnail: true,
-thumbnail: await resize(thumb, 300, 175),
-sourceUrl: web,
-mediaUrl: thumb,
-},
-},
-}, {quoted: m});
-}}
 break
 
 case 'wikwik': {
@@ -8311,10 +8229,6 @@ delete tebakgame[m.chat]
 return Line.sendMessage(m.chat, {text: `Yahh, masa nyerah :)`}, {quoted: m})
 }}
 break
-
-// === Rpg Menu
-
-
 
 // === Store Menu
 
@@ -15257,7 +15171,7 @@ case 'Lineai': {
   try {
  if (!text) return m.reply(`Contoh: ${prefix+command} hai Line`)
  
- let response = await fetch(`https://btch.us.kg/openai?text=${encodeURIComponent(text)}`)
+ let response = await fetch(`https://api.tioo.eu.org/openai?text=${encodeURIComponent(text)}`)
  if (!response.ok) throw new Error('Gagal mengambil data dari API')
  
  let result = await response.json()
@@ -15277,7 +15191,7 @@ case 'Lineai2': {
  if (!text) return m.reply(`Contoh: ${prefix+command} hai Line`);
  
  const prompt = `Nama kamu Line dibuat oleh Line, kamu adalah AI yang sangat pintar dan jawablah pertanyaan ini dengan benar: ${text}`;
- const apiUrl = `https://btch.us.kg/prompt/gpt?prompt=${encodeURIComponent(prompt)}&text=${encodeURIComponent(text)}`;
+ const apiUrl = `https://api.tioo.eu.org/prompt/gpt?prompt=${encodeURIComponent(prompt)}&text=${encodeURIComponent(text)}`;
  
  let response = await fetch(apiUrl);
  if (!response.ok) throw new Error('Gagal mengambil data dari API');
@@ -15411,7 +15325,7 @@ case 'gemini': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/gemini?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/gemini?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15432,7 +15346,7 @@ case 'bard': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/bard?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/bard?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15453,7 +15367,7 @@ case 'bingai': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/bingai?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/bingai?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15474,7 +15388,7 @@ case 'chatgpt1': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/turbo?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/turbo?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15495,7 +15409,7 @@ case 'chatgpt2': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/v2/turbo?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/v2/turbo?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15516,7 +15430,7 @@ case 'gpt4': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/gpt4?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/gpt4?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15538,7 +15452,7 @@ case 'gpt2': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/v2/gpt4?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/v2/gpt4?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15580,7 +15494,7 @@ case 'gptgo': {
 
     if (!text) return m.reply(`Contoh: ${prefix + command} siapa kamu`);
 
-    let response = await fetch(`https://btch.us.kg/gptgo?text=${encodeURIComponent(text)}`);
+    let response = await fetch(`https://api.tioo.eu.org/gptgo?text=${encodeURIComponent(text)}`);
 
     if (!response.ok) throw new Error('Gagal mengambil data dari API');
 
@@ -15624,7 +15538,7 @@ case 'simisimi': {
   try {
  if (!text) return m.reply(`Contoh: ${prefix+command} hai simi`);
  
- const apiUrl = `https://btch.us.kg/simi?text=${encodeURIComponent(text)}`;
+ const apiUrl = `https://api.tioo.eu.org/simi?text=${encodeURIComponent(text)}`;
  
  let response = await fetch(apiUrl);
  if (!response.ok) throw new Error('Gagal mengambil data dari API');
@@ -15679,7 +15593,7 @@ case 'gptpro': {
   try {
  if (!text) return m.reply(`Contoh: ${prefix+command} hai gpt`);
 
- const apiUrl = `https://btch.us.kg/gpt4?text=${encodeURIComponent(text)}`;
+ const apiUrl = `https://api.tioo.eu.org/gpt4?text=${encodeURIComponent(text)}`;
 
  let response = await fetch(apiUrl);
  if (!response.ok) throw new Error('Gagal mengambil data dari API');
@@ -16164,26 +16078,6 @@ console.error('Error:', err)
 }
 break
 
-case 'liteapks': {
-try {
-if (!text) return m.reply(`Contoh: ${p_c} stickman`)
-let { liteApks } = require('./lib/general/scrape')
-let results = await liteApks(text)
-if (!Array.isArray(results) || results.length === 0) {
-return m.reply('Tidak ada hasil ditemukan.')
-}
-let allResults = results.map(kep => {
-return `Judul: ${kep.title}\nVersi: ${kep.version}\nSize: ${kep.size}\nLink: ${kep.link}\nMod: ${kep.mod}\n`
-}).join('\n')
-let firstImageUrl = results[0].image;
-Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
-} catch (err) {
-m.reply('Terjadi kesalahan: ' + err)
-console.error('Error:', err)
-}
-}
-break
-
 case 'music': {
 try {
 if (!text) return m.reply(`Contoh: ${prefix + command} Shape of You`);
@@ -16262,7 +16156,7 @@ case 'gimage': {
  vreact()
 
  try {
-  const backupUrl = `https://btch.us.kg/googleimage?query=${encodeURIComponent(text)}`;
+  const backupUrl = `https://api.tioo.eu.org/googleimage?query=${encodeURIComponent(text)}`;
   
   let response = await fetch(backupUrl);
   let data = await response.json();
@@ -16392,13 +16286,13 @@ case 'play': {
           header: '[Video] Download Video',
           title: `ID: ${url.split('v=')[1]}`,
           description: `Link: ${url}`,
-          id: `.viedo ${url}`
+          id: `.ytmp4 ${url}`
         },
         {
           header: '[Audio] Download Audio',
           title: `ID: ${url.split('v=')[1]}`,
           description: `Link: ${url}`,
-          id: `.audio ${url}`
+          id: `.ytmp3 ${url}`
         }
       ]
     }];
@@ -17263,7 +17157,7 @@ break
 
 case 'china':
 try {
-const imageUrl = 'https://btch.us.kg/china'; 
+const imageUrl = 'https://api.tioo.eu.org/china'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17275,7 +17169,7 @@ break
 
 case 'vietnam':
 try {
-const imageUrl = 'https://btch.us.kg/vietnam'; 
+const imageUrl = 'https://api.tioo.eu.org/vietnam'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17287,7 +17181,7 @@ break
 
 case 'thailand':
 try {
-const imageUrl = 'https://btch.us.kg/thailand'; 
+const imageUrl = 'https://api.tioo.eu.org/thailand'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17299,7 +17193,7 @@ break
 
 case 'indonesia':
 try {
-const imageUrl = 'https://btch.us.kg/indonesia'; 
+const imageUrl = 'https://api.tioo.eu.org/indonesia'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17311,7 +17205,7 @@ break
 
 case 'korea':
 try {
-const imageUrl = 'https://btch.us.kg/korea'; 
+const imageUrl = 'https://api.tioo.eu.org/korea'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17323,7 +17217,7 @@ break
 
 case 'japan':
 try {
-const imageUrl = 'https://btch.us.kg/japan'; 
+const imageUrl = 'https://api.tioo.eu.org/japan'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17335,7 +17229,7 @@ break
 
 case 'malaysia':
 try {
-const imageUrl = 'https://btch.us.kg/malaysia'; 
+const imageUrl = 'https://api.tioo.eu.org/malaysia'; 
 await Line.sendMessage(m.chat, {
 image: { url: imageUrl },
 caption: `© ${wm}`
@@ -17749,7 +17643,7 @@ break
 case 'proxy':
 if (!args[0]) return reply('Harap masukkan URL yang ingin diakses melalui proxy, contoh: .proxy https://google.com') 
 const targetUrl = args[0];
-const proxyUrl = `https://btch.us.kg/proxy?url=${encodeURIComponent(targetUrl)}`;
+const proxyUrl = `https://api.tioo.eu.org/proxy?url=${encodeURIComponent(targetUrl)}`;
 try {
 const response = await fetch(proxyUrl);
 if (!response.ok) throw new Error('Gagal mengakses halaman melalui proxy.');
@@ -17960,7 +17854,7 @@ if (!text) {
 return m.reply(`Contoh: ${prefix + command} laskar pelangi`);
 }
 try {
-const apiUrl = `https://btch.us.kg/chord?query=${encodeURIComponent(text)}`;
+const apiUrl = `https://api.tioo.eu.org/chord?query=${encodeURIComponent(text)}`;
 const response = await fetchJson(apiUrl);
 if (response && response.status && response.result) {
 const chordData = response.result; 
@@ -18049,7 +17943,7 @@ case 'recipe':
 case 'resep': {
   if (!text) return m.reply(`Contoh: ${command} pizza`)
 
-  const url = `https://btch.us.kg/cariresep?query=${text}`
+  const url = `https://api.tioo.eu.org/cariresep?query=${text}`
   const result = await fetchJson(url)
 
   if (!result.hasil || !result.hasil.data || result.hasil.data.length === 0) {
@@ -18069,7 +17963,7 @@ case 'bacaresep':
 case 'baca-resep': {
   if (!text) return m.reply(`Contoh: ${command} linknya`)
 
-  const url = `https://btch.us.kg/bacaresep?link=${encodeURIComponent(text)}`
+  const url = `https://api.tioo.eu.org/bacaresep?link=${encodeURIComponent(text)}`
   const result = await fetchJson(url)
 
   if (!result.hasil || !result.hasil.data) {
@@ -18095,7 +17989,7 @@ case 'cuaca':
 case 'infocuaca': {
   if (!text) return m.reply(`Contoh: ${command} Jakarta`)
 
-  const url = `https://btch.us.kg/weather?text=${encodeURIComponent(text)}`
+  const url = `https://api.tioo.eu.org/weather?text=${encodeURIComponent(text)}`
   const result = await fetchJson(url)
 
   if (!result.status || !result.result) {
@@ -18125,7 +18019,7 @@ case 'kalender': {
     return m.reply(`Bulan harus berupa angka antara 1-12.\nContoh: ${command} 5 2024 untuk Maret 2024`)
   }
 
-  const url = `https://btch.us.kg/kalender?bulan=${bulan}&tahun=${tahun}`
+  const url = `https://api.tioo.eu.org/kalender?bulan=${bulan}&tahun=${tahun}`
   const result = await fetchJson(url)
 
   if (!result.status || !result.result || result.result.length === 0) {
@@ -18145,7 +18039,7 @@ break
 
 case 'gempa':
 case 'infogempa': {
-  const url = `https://btch.us.kg/gempa`
+  const url = `https://api.tioo.eu.org/gempa`
   const result = await fetchJson(url)
 
   if (!result || result.status !== 200 || !result.result) {
@@ -18169,7 +18063,7 @@ break
 case 'ppcp':
 case 'couple':
 case 'ppcouple': {
-  const url = `https://btch.us.kg/ppcp`
+  const url = `https://api.tioo.eu.org/ppcp`
   const result = await fetchJson(url)
 
   if (!result || !result.status) {
@@ -18188,7 +18082,7 @@ case 'jarak': {
   let [lc1, lc2] = text.split('|')
   if (!lc1 || !lc2) return m.reply(`Contoh: ${command} Bekasi|Jakarta\nNote: dari|ke`)
   try {
-    let res = await fetchJson(`https://btch.us.kg/jarak?dari=${encodeURIComponent(lc1)}&ke=${encodeURIComponent(lc2)}`)
+    let res = await fetchJson(`https://api.tioo.eu.org/jarak?dari=${encodeURIComponent(lc1)}&ke=${encodeURIComponent(lc2)}`)
     let ror = res.url
     await Line.sendMessage(m.chat, {image: {url: ror.data }, caption: ror.desc }, {quoted: m})
   } catch (err) {
@@ -18202,7 +18096,7 @@ case 'jadwaltv': {
     try {
         if (!text) return m.reply(`Contoh: ${command} indosiar`)
 
-        const res = await fetchJson(`https://btch.us.kg/jadwaltv?tv=${encodeURIComponent(text.toLowerCase())}`)
+        const res = await fetchJson(`https://api.tioo.eu.org/jadwaltv?tv=${encodeURIComponent(text.toLowerCase())}`)
         if (res.tv_available) {
             if (!res.result) return m.reply('Jadwal tidak ditemukan untuk channel tersebut.')
             let jadwal = `Jadwal TV ${text.charAt(0).toUpperCase() + text.slice(1)}:\n`
@@ -18348,7 +18242,7 @@ return m.reply(`Contoh: ${prefix + command} Jakarta|Surabaya`);
 }
 const [dari, ke] = text.split('|').map(loc => loc.trim());
 try {
-const apiUrl = `https://btch.us.kg/jarak?dari=${encodeURIComponent(dari)}&ke=${encodeURIComponent(ke)}`;
+const apiUrl = `https://api.tioo.eu.org/jarak?dari=${encodeURIComponent(dari)}&ke=${encodeURIComponent(ke)}`;
 const response = await fetchJson(apiUrl);
 if (response && response.status && response.url && response.url.status) {
 const { data: imgLink, desc: deskripsi } = response.url;
@@ -18369,7 +18263,7 @@ if (!text) {
 return m.reply(`Contoh: ${prefix + command} Jakarta`);
 }
 try {
-const apiUrl = `https://btch.us.kg/weather?text=${encodeURIComponent(text)}`;
+const apiUrl = `https://api.tioo.eu.org/weather?text=${encodeURIComponent(text)}`;
 const response = await fetchJson(apiUrl);
 if (response && response.status && response.result) {
 const {
@@ -18407,7 +18301,7 @@ if (!text) {
 return m.reply(`Contoh: ${prefix + command} Kentang`);
 }
 try {
-const apiUrl = `https://btch.us.kg/cariresep?query=${encodeURIComponent(text)}`;
+const apiUrl = `https://api.tioo.eu.org/cariresep?query=${encodeURIComponent(text)}`;
 const response = await fetchJson(apiUrl);
 if (response && response.hasil && response.hasil.data && response.hasil.data.length > 0) {
 const maxResults = 5;
@@ -18433,7 +18327,7 @@ if (!text) {
 return m.reply(`Contoh: ${prefix + command} google.com`);
 }
 try {
-const apiUrl = `https://btch.us.kg/expireddomain?domain=${encodeURIComponent(text)}`;
+const apiUrl = `https://api.tioo.eu.org/expireddomain?domain=${encodeURIComponent(text)}`;
 const response = await fetchJson(apiUrl);
 if (response && response.status && response.data) {
 const domainInfo = response.data;
@@ -18476,60 +18370,6 @@ case 'steam': {
        }).join('\n')
 
        let firstImageUrl = results.data[0].image;
-       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
-   } catch (err) {
-       m.reply('Terjadi kesalahan: ' + err)
-       console.error('Error:', err)
-   }
-}
-break
-
-case 'genius':
-case 'geniussrc': {
-   try {
-       if (!text) return m.reply(`Contoh: ${p_c} mbappe`)
-       let results = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/genius?q=${Enc(text)}`)
-       let allResults = results.map(kep => {
-           return `Judul: ${kep.fullTitle}\nArtis: ${kep.artist.name}\nPublik: ${kep.publish}\nLink: ${kep.url}\nAvatar: ${kep.artist.avatar}\n`
-       }).join('\n')
-
-       let firstImageUrl = results[0].thumbnail;
-       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
-   } catch (err) {
-       m.reply('Terjadi kesalahan: ' + err)
-       console.error('Error:', err)
-   }
-}
-break
-
-case 'pixabay':
-case 'pixabaysrc': {
-   try {
-       if (!text) return m.reply(`Contoh: ${p_c} mbappe`)
-       let results = await fetchJson(`https://deliriussapi-oficial.vercel.app/search/pixabay?query=${text}`)
-       let allResults = results.data.map(kep => {
-           return `Tags: ${kep.tags}\nSize: ${kep.size}\nLike: ${kep.likes}\nComment: ${kep.comments}\nDownload: ${kep.downloads}\nUser: ${kep.user}\nLink: ${kep.link}\n`
-       }).join('\n')
-
-       let firstImageUrl = results.data[0].image;
-       Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
-   } catch (err) {
-       m.reply('Terjadi kesalahan: ' + err)
-       console.error('Error:', err)
-   }
-}
-break
-
-case 'liriksrc':
-case 'srclirik': {
-   try {
-       if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
-       let results = await fetchJson(`https://vapis.my.id/api/lirik?q=${Enc(text)}`)
-       let allResults = results.data.map(kep => {
-           return `Judul: ${kep.title}\nArtis: ${kep.artist}\nAlbum: ${kep.album}\nLink: ${kep.link}\n`
-       }).join('\n')
-
-       let firstImageUrl = results.data[0].imageUrl;
        Line.sendMessage(m.chat, {image: {url: firstImageUrl}, caption: allResults}, {quoted: m})
    } catch (err) {
        m.reply('Terjadi kesalahan: ' + err)
@@ -18806,61 +18646,161 @@ break
 // === Fun Menu
 
 case 'apakah': {
-if (!text) return m.reply(`Contoh: ${prefix+command} saya ganteng?`)
-const jawaban = ['Iya', 'Mungkin iya', 'Mungkin', 'Gak', 'Mungkin gak', 'Gak tau']
-const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
-m.reply(`*Pertanyaan:* Apakah ${text}\n*Jawaban:* ${coli}`)
+    if (!text) return m.reply(`Contoh: ${p_c} saya ganteng?`)
+    const jawaban = ['Iya', 'Mungkin iya', 'Mungkin', 'Gak', 'Mungkin gak', 'Gak tau']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Apakah ${text}\n*Jawaban:* ${coli}`)
 }
 break
 
 case 'bisakah': {
-if (!text) return m.reply(`Contoh: ${prefix+command} saya jadi kaya?`)
-const jawaban = ['Bisa banget', 'Bisa', 'Mungkin bisa', 'Mungkin', 'Gak bisa', 'Mungkin gak bisa', 'Gak bisa lah', 'Gak tau']
-const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
-m.reply(`*Pertanyaan:* Bisakah ${text}\n*Jawaban:* ${coli}`)
+    if (!text) return m.reply(`Contoh: ${p_c} saya jadi kaya?`)
+    const jawaban = ['Bisa banget', 'Bisa', 'Mungkin bisa', 'Mungkin', 'Gak bisa', 'Mungkin gak bisa', 'Gak bisa lah', 'Gak tau']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Bisakah ${text}\n*Jawaban:* ${coli}`)
 }
 break
 
 case 'kapankah': {
-if (!text) return m.reply(`Contoh: ${prefix+command} saya kaya?`)
-const jawabanWaktu = [
-'Bentar lagi',
-'Nunggu kiamat dulu',
-'Kapan-kapan',
-'Besok',
-'Pas lu tidur',
-'Gw juga gak tau kapan'
-]
-const waktuRandom = Math.floor(Math.random() * 10) + 1
-const unitWaktu = ['minggu', 'bulan', 'tahun']
-const unitWaktuRandom = unitWaktu[Math.floor(Math.random() * unitWaktu.length)]
-const jawaban = [...jawabanWaktu, `${waktuRandom} ${unitWaktuRandom} lagi` ]
-const hasilJawaban = jawaban[Math.floor(Math.random() * jawaban.length)]
-m.reply(`*Pertanyaan:* Kapankah ${text}\n*Jawaban:* ${hasilJawaban}`)
+    if (!text) return m.reply(`Contoh: ${p_c} saya kaya?`)
+    const jawabanWaktu = [
+        'Bentar lagi',
+        'Nunggu kiamat dulu',
+        'Kapan-kapan',
+        'Besok',
+        'Pas lu tidur',
+        'Gw juga gak tau kapan'
+    ]
+    const waktuRandom = Math.floor(Math.random() * 10) + 1
+    const unitWaktu = ['minggu', 'bulan', 'tahun']
+    const unitWaktuRandom = unitWaktu[Math.floor(Math.random() * unitWaktu.length)]
+    const jawaban = [...jawabanWaktu, `${waktuRandom} ${unitWaktuRandom} lagi`]
+    const hasilJawaban = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Kapankah ${text}\n*Jawaban:* ${hasilJawaban}`)
 }
 break
 
 case 'cekganteng': {
-if (!text) return m.reply(`Contoh: ${prefix+command} nama seseorang atau tag`)
-const jawaban1 = ['ganteng','jelek']
-const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
-
-const jawaban = [randomNomor(2, 100)+`% ${coli1}`, 'Ganteng', 'Ganteng amat', 'Lumayan', 'Jelek', 'Jelek amat']
-const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
-m.reply(`*Pertanyaan:* Cekganteng ${text}\n*Jawaban:* ${coli}`)
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const jawaban1 = ['ganteng', 'jelek']
+    const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
+    
+    const jawaban = [randomNomor(2, 100) + `% ${coli1}`, 'Ganteng', 'Ganteng amat', 'Lumayan', 'Jelek', 'Jelek amat']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Cekganteng ${text}\n*Jawaban:* ${coli}`)
 }
 break
 
 case 'cekcantik': {
-if (!text) return m.reply(`Contoh: ${prefix+command} nama seseorang atau tag`)
-const jawaban1 = ['cantik','jelek']
-const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
-
-const jawaban = [randomNomor(2, 100)+`% ${coli1}`, 'Cantik', 'Cantik amat', 'Lumayan', 'Jelek', 'Jelek amat']
-const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
-m.reply(`*Pertanyaan:* Cekcantik ${text}\n*Jawaban:* ${coli}`)
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const jawaban1 = ['cantik', 'jelek']
+    const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
+    
+    const jawaban = [randomNomor(2, 100) + `% ${coli1}`, 'Cantik', 'Cantik amat', 'Lumayan', 'Jelek', 'Jelek amat']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Cekcantik ${text}\n*Jawaban:* ${coli}`)
 }
+break
 
+case 'cekgay': {
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const jawaban1 = ['gay', 'raja gay']
+    const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
+    
+    const jawaban = [randomNomor(2, 100) + `% ${coli1}`, 'Gay', 'Gay amat', 'Mayan', 'Gak', 'Gak lah']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Cekgay ${text}\n*Jawaban:* ${coli}`)
+}
+break
+
+case 'ceklesbi': {
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const jawaban1 = ['lesbi', 'ratu lesbi']
+    const coli1 = jawaban1[Math.floor(Math.random() * jawaban1.length)]
+    
+    const jawaban = [randomNomor(2, 100) + `% ${coli1}`, 'Lesbi', 'Lesbi amat', 'Mayan', 'Gak', 'Gak lah']
+    const coli = jawaban[Math.floor(Math.random() * jawaban.length)]
+    m.reply(`*Pertanyaan:* Ceklesbi ${text}\n*Jawaban:* ${coli}`)
+}
+break
+
+case 'sifat':
+case 'ceksifat': {
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const sifat = [
+        'Periang', 'Pemalu', 'Pendiam', 'Perhatian', 'Sabar', 'Cepat marah', 
+        'Ceroboh', 'Pekerja keras', 'Ambisius', 'Bijaksana', 'Manja', 'Kreatif', 
+        'Penyayang', 'Suka membantu', 'Pendendam', 'Penuh semangat', 'Romantis', 
+        'Cepat bosan', 'Penuh rencana', 'Suka menunda', 'Penuh rahasia', 
+        'Cuek', 'Penuh percaya diri', 'Pemikir', 'Suka bercanda', 'Jujur', 
+        'Penyendiri', 'Penuh kejutan', 'Pemalu tapi hangat', 'Bergairah', 
+        'Suka berdiskusi', 'Tegas', 'Suka menyendiri', 'Ramah', 'Misterius', 
+        'Perasa', 'Bijak', 'Tertutup', 'Suka tantangan', 'Optimis', 'Pencemas', 
+        'Suka menjadi pusat perhatian', 'Setia', 'Suka berpetualang', 'Gugup', 
+        'Sensitif', 'Suka ngatur', 'Tangguh', 'Serius', 'Mudah marah', 
+        'Pandai berdamai', 'Terlalu perfeksionis', 'Sederhana', 'Penuh kasih sayang', 
+        'Penuh energi', 'Introvert', 'Extrovert', 'Ambivert', 'Kocak', 'Logis', 
+        'Penyendiri tapi bisa bersosialisasi', 'Penuh ide', 'Sangat disiplin', 
+        'Berani mengambil risiko', 'Suka mengalah', 'Senang bergaul', 'Suka berolahraga', 
+        'Mudah terpengaruh', 'Bergantung pada orang lain', 'Penuh semangat hidup', 
+        'Terlalu banyak bicara', 'Sangat memperhatikan detail', 'Suka memberi nasihat'
+    ]
+    const coli = sifat[Math.floor(Math.random() * sifat.length)]
+    m.reply(`*Pertanyaan:* Ceksifat ${text}\n*Jawaban:* ${coli}`)
+}
+break
+
+case 'cekhobi':
+case 'cekhoby':
+case 'cekhobby': {
+    if (!text) return m.reply(`Contoh: ${p_c} nama seseorang atau tag`)
+    const hobi = [
+        'Membaca buku', 'Berenang', 'Olahraga', 'Memasak', 'Menulis', 'Bermain game', 
+        'Menonton film', 'Travelling', 'Mendaki gunung', 'Fotografi', 'Melukis', 
+        'Musik', 'Berkebun', 'Menggambar', 'Berburu', 'Mendengarkan podcast', 
+        'Berbelanja', 'Mengoleksi barang antik', 'Berkendara motor', 'Menyelam', 
+        'Bermain olahraga tim', 'Memancing', 'Menjahit', 'Mencipta seni', 'Seni bela diri', 
+        'Coding', 'Yoga', 'Meditasi', 'Menulis puisi', 'Sewaktu-waktu berkumpul dengan teman', 
+        'Berkreasi dengan DIY', 'Mendengarkan musik klasik', 'Menari', 'Bermain alat musik', 
+        'Mendengarkan cerita horor', 'Berselancar', 'Bermain skateboard', 'Camping', 
+        'Main kartu', 'Bermain catur', 'Bermain puzzle', 'Mempelajari bahasa baru', 
+        'Mengajar', 'Berkumpul di acara komunitas', 'Fotografi alam', 'Menulis cerita fiksi', 
+        'Berkendara sepeda', 'Main cosplay', 'Kegiatan sosial', 'Melakukan eksperimen kimia', 
+        'Astrologi', 'Bermain dengan hewan peliharaan', 'Memperbaiki barang rusak', 'Berkunjung ke museum', 
+        'Bermain tenis', 'Main golf', 'Bermain voli', 'Panjat tebing', 'Mendekorasi rumah', 
+        'Sewaktu-waktu berkemah', 'Bermain basket', 'Membuat kerajinan tangan', 'Bermain piano', 
+        'Bermain gitar', 'Mendengarkan musik rock', 'Main drum', 'Mengecat', 'Mengoleksi kartu', 
+        'Sains eksperimen', 'Menciptakan aplikasi', 'Menjahit pakaian', 'Bermain frisbee', 
+        'Bermain dengan teknologi', 'Berkendara mobil', 'Berkunjung ke pantai', 'Main catur', 
+        'Mengunjungi tempat bersejarah', 'Berkebun tanaman hias', 'Menciptakan game', 'Bermain tenis meja', 
+        'Bermain dengan mainan robotik', 'Bergabung dengan klub diskusi', 'Berkarya di YouTube', 'Menulis blog'
+    ]
+    const coli = hobi[Math.floor(Math.random() * hobi.length)]
+    m.reply(`*Pertanyaan:* Cekhoby ${text}\n*Jawaban:* ${coli}`)
+}
+break
+
+case 'jodoh':
+case 'cekjodoh': {
+    try {
+        let target = text
+            ? text.replace(/[@]/g, '').split('@')[0]
+            : m.sender.split('@')[0]
+
+        let member = participants
+            .filter(u => typeof u.id === 'string' && u.id.includes('@'))
+            .map(u => u.id.split('@')[0])
+
+        if (!member.includes(target)) target = m.sender.split('@')[0]
+
+        let jodoh = member[Math.floor(Math.random() * member.length)]
+        let jawab = `*JODOHNYA ${Line.getName(target + '@s.whatsapp.net').toUpperCase()}*\n${target} ❤️ @${jodoh}`
+        let menst = [`${target}@s.whatsapp.net`, `${jodoh}@s.whatsapp.net`]
+        Line.sendMessage(from, { text: jawab, mentions: menst }, { quoted: m })
+    } catch (err) {
+        m.reply('Terjadi kesalahan: ' + err)
+    }
+}
 break
 
 // === Others Menu
@@ -20056,14 +19996,14 @@ break
 case 'txt2imgv1': {
   if (!text) return m.reply(`Contoh: ${command} beautiful girl with handsome man`)
     vreact()
-    await Line.sendMessage(m.chat, {image: {url: `https://btch.us.kg/v1/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
+    await Line.sendMessage(m.chat, {image: {url: `https://api.tioo.eu.org/v1/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
 }
 break
 
 case 'txt2imgv2': {
   if (!text) return m.reply(`Contoh: ${command} beautiful girl with handsome man`)
     vreact()
-    await Line.sendMessage(m.chat, {image: {url: `https://btch.us.kg/v2/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
+    await Line.sendMessage(m.chat, {image: {url: `https://api.tioo.eu.org/v2/text2img?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
 }
 break
 
@@ -20097,12 +20037,37 @@ case 'txt2imgv6': {
 }
 break
 
+case 'blurimg':
+case 'facepalm':
+case 'beautiful': {
+  if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${p_c}`);
+  vreact();
+  let media = await Line.downloadAndSaveMediaMessage(quoted)
+  let url = await CatBox(media)
+  Line.sendMessage(m.chat, {
+    image: {url: `https://vapis.my.id/api/${command}?url=${url}` }}, {
+    quoted: m
+  });
+}
+break
+
+case 'txtimg':
+case 'textimg':
+case 'txtimage':
+case 'textimage': {
+  if (!text) return m.reply(`Contoh: ${p_c} hai`)
+  if (text.length > 150) return m.reply(`Karakter terbatas, max 150!`)
+  vreact()
+  Line.sendMessage(m.chat, {image: {url: `https://vapis.my.id/api/txtimage?q=${text}` }}, {quoted: m})
+}
+break
+
 case 'emojimix': {
   if (!text.includes('+')) return m.reply(`Contoh: ${p_c} 😂+😭`)
   let [emoji1, emoji2] = text.split('+')
   if (!emoji1 || !emoji2) return m.reply(`Contoh: ${p_c} 😂+😭`)
   try {
-    let res = await fetch(`https://btch.us.kg/emojimix?emoji1=${emoji1}&emoji2=${emoji2}`)
+    let res = await fetch(`https://api.tioo.eu.org/emojimix?emoji1=${emoji1}&emoji2=${emoji2}`)
     let buffer = await res.buffer()
     await Line.sendImageAsSticker(m.chat, buffer, m, {
       packname: ``,
@@ -20119,7 +20084,7 @@ case 'attp':
 case 'ttp': {
   if (!text) return m.reply(`Contoh: ${p_c} hai`)
   try {
-    let res = await fetch(`https://btch.us.kg/${command}?text=${text}`)
+    let res = await fetch(`https://api.tioo.eu.org/${command}?text=${text}`)
     if (!res.ok) throw new Error('Gagal mendapatkan respon')
     let buffer = await res.buffer()
     await Line.sendImageAsSticker(m.chat, buffer, m, {
@@ -20136,7 +20101,7 @@ break
 case 'dalle': {
   if (!text) return m.reply(`Contoh: ${command} beautiful girl with handsome man`)
     vreact()
-    await Line.sendMessage(m.chat, {image: {url: `https://btch.us.kg/dalle?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
+    await Line.sendMessage(m.chat, {image: {url: `https://api.tioo.eu.org/dalle?text=${encodeURIComponent(text)}` }, caption: wm }, {quoted: m})
 }
 break
 
@@ -20191,6 +20156,7 @@ m.reply(tekz)
 break
 
 //Rpg Menu
+
 case 'joinrpg': {
   joinRPG(m.sender, m)
 }
@@ -20521,7 +20487,6 @@ case 'mining': {
     }
   }
 
-  // Proses mining dengan animasi
   m.reply('⛏️ Mulai mining...').then(async () => {
     await ditt2(m.sender, m, 1000, '⛏️ Menggali...', '⛏️ Mendalami lapisan batu...', '⛏️ Mencari harta karun...')
     
@@ -20576,7 +20541,7 @@ case 'mancing': {
     }
   }
 
-  player.resources.umpan = Math.max(0, player.resources.umpan - 1) 
+  player.resources.umpan = Math.max(0, player.resources.umpan - 1)
   fs.writeFileSync('./data/userRpg.json', JSON.stringify(data, null, 2))
 
   m.reply('🎣 Mulai memancing...').then(async () => {
