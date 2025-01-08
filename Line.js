@@ -25,6 +25,7 @@ const { exec, execSync } = require('child_process')
 //==========================
 
 const { Saweria } = require('./lib/general/saweria')
+const { uploadMedia } = require('./lib/general/uploader');
 const own = JSON.parse(fs.readFileSync('./data/owner.json').toString())
 const premium = JSON.parse(fs.readFileSync('./data/premium.json'))
 const res = JSON.parse(fs.readFileSync('./data/reseller.json').toString())
@@ -45,7 +46,7 @@ let sewa = JSON.parse(fs.readFileSync('./data/sewa.json'))
 
 //==========================
 
-const { ephoto, CarbonifyV1, CarbonifyV2, mediafireDl, getMimeType, ssweb, tiktokSearchVideo, searchSpotifyTracks, pinterest, toBase64, toOriginal, obfusc, deobfusc, toGhRaw, toGhOri, toFont, kapital, obfus1, obfus2, autoLevelUp, getprodukDariFile, simpenProduknya, getidProduk, cekProduknye, addprodukzz, delprodukzz, updprodukzz, getprodukdb, simpenSmTr, getSmTr, getTrId, cIdTrnya, saveTrnye, simpenDisc, getDisczz, addDisczz, persenDiskonnya, ngerestokk, bacaData, simpanData, buatPapan, lemparDadu, generateTanggaDanUlar, pindahPosisi, mulaiGame, joinGame, mainGame, hapusGame, cariIdGame, mainGameAuto, hapusGameAuto, getRewards, rapihin, rapihin2, addWm, speedVideo, detekFps, ubahFps, audio2txt, getIPInfo,convertRecords, fetchDNSRecordsFromHackertarget, fetchDNSRecords, getEwalletInfo, ytdl } = require('./lib/general/scrape')
+const { ephoto, CarbonifyV1, CarbonifyV2, mediafireDl, getMimeType, ssweb, tiktokSearchVideo, spotifySearch, spotifyDl,pinterest, toBase64, toOriginal, obfusc, deobfusc, toGhRaw, toGhOri, toFont, kapital, obfus1, obfus2, autoLevelUp, getprodukDariFile, simpenProduknya, getidProduk, cekProduknye, addprodukzz, delprodukzz, updprodukzz, getprodukdb, simpenSmTr, getSmTr, getTrId, cIdTrnya, saveTrnye, simpenDisc, getDisczz, addDisczz, persenDiskonnya, ngerestokk, bacaData, simpanData, buatPapan, lemparDadu, generateTanggaDanUlar, pindahPosisi, mulaiGame, joinGame, mainGame, hapusGame, cariIdGame, mainGameAuto, hapusGameAuto, getRewards, rapihin, rapihin2, addWm, speedVideo, detekFps, ubahFps, audio2txt, getIPInfo,convertRecords, fetchDNSRecordsFromHackertarget, fetchDNSRecords, getEwalletInfo, ytdl, terabox } = require('./lib/general/scrape')
 const { search } = require('yt-search')
 const { sticker5 } = require('./lib/general/sticker')
 const apiKey = '59cd1d8559e5fa45edb5dff79cd51acc';
@@ -1122,7 +1123,7 @@ gifPlayback: true,
 subtitle: "",
 hasMediaAttachment: true,
 ...(await prepareWAMessageMedia({
-document: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+document: fs.readFileSync('./lib/thumbnail/thumbnail.jpg'),
 mimetype: "image/png",
 fileLength: 99999999999999,
 jpegThumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
@@ -1177,7 +1178,7 @@ gifPlayback: true,
 subtitle: "",
 hasMediaAttachment: true,
 ...(await prepareWAMessageMedia({
-document: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+document: fs.readFileSync('./lib/thumbnail/thumbnail.jpg'),
 mimetype: "image/png",
 fileLength: 99999999999999,
 jpegThumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
@@ -1574,31 +1575,41 @@ m.reply('Terjadi kesalahan: ' + err.message);
 }
 }
 
-const didyoumean = require('didyoumean')
-const similarity = require('similarity')
+const didyoumean = require('didyoumean');
+const similarity = require('similarity');
 if (command) {
-let caseNames = getCaseNames()
-function getCaseNames() {
-try {
-const data = fs.readFileSync('Line.js', 'utf8')
-const casePattern = /case\s+'([^']+)'/g
-const matches = data.match(casePattern)
-if (matches) {
-const caseNames = matches.map(match => match.replace(/case\s+'([^']+)'/, '$1'))
-return caseNames
-} else {
-return []
-}} catch (err) {
-console.log('Terjadi kesalahan:', err)
-return []
-}}
-let mean = didyoumean(command, caseNames)
-let sim = similarity(command, mean)
-let similarityPercentage = parseInt(sim * 100)
-if (mean && command.toLowerCase() !== mean.toLowerCase()) {
-let response = `Maaf, command yang kamu berikan salah. mungkin ini yang kamu maksud:\n\n•> ${prefix+mean}\n•> Kemiripan: ${similarityPercentage}%`
-Line.sendMessage(m.chat, { text: response, footer: `By ${wm}`, buttons: [{ buttonId: prefix+mean, buttonText: { displayText: `${mean.toUpperCase()}` }, type: 1 }], headerType: 1, viewOnce: true }, { quoted: m })
-}}
+    let caseNames = getCaseNames();
+    
+    function getCaseNames() {
+        try {
+            const data = fs.readFileSync('Line.js', 'utf8');
+            const casePattern = /case\s+'([^']+)'/g;
+            const matches = data.match(casePattern);
+            
+            if (matches) {
+                const caseNames = matches.map(match => match.replace(/case\s+'([^']+)'/, '$1'));
+                return caseNames;
+            } else {
+                return [];
+            }
+        } catch (err) {
+            console.log('Terjadi kesalahan:', err);
+            return [];
+        }
+    }
+
+    let mean = didyoumean(command, caseNames);
+    let sim = similarity(command, mean);
+    let similarityPercentage = parseInt(sim * 100);
+    
+    if (mean && command.toLowerCase() !== mean.toLowerCase()) {
+        let response = `Maaf, command yang kamu berikan salah. Mungkin ini yang kamu maksud:\n\n•> ${prefix + mean}\n•> Kemiripan: ${similarityPercentage}%`;
+        
+        let kon = `{\"display_text\":\"${prefix + mean}\",\"id\":\"${prefix + mean}\"}`;
+        
+        quickreply1(m.chat, response, kon, m);
+    }
+}
 
 if (m.isGroup && isAlreadyResponList(m.chat, body.toLowerCase(), db_respon_list)) {
 var get_data_respon = getDataResponList(m.chat, body.toLowerCase(), db_respon_list)
@@ -2304,7 +2315,7 @@ case 'menu':
 case 'menu-v': {
 vreact();
 let susu = `
-┏━━━❖•ೋ° LINE-BOT 
+┏━━━❖•ೋ° 
 ┃ 
 ┃  🤖 *INFO BOT*  
 ┃  ───────────────  
@@ -2314,37 +2325,8 @@ let susu = `
 ┃  ✦ Version : *v${version}*  
 ┃  ✦ Platform : *C-Ubuntu*  
 ┃  
-┣━━━❖•ೋ° COMMAND 
-┃  
-┃  01. *${prefix}mainmenu*        
-┃  02. *${prefix}ownermenu*       
-┃  03. *${prefix}groupmenu*       
-┃  04. *${prefix}gamesmenu*       
-┃  05. *${prefix}storemenu*       
-┃  06. *${prefix}menfesmenu*      
-┃  07. *${prefix}cpanelmenu*      
-┃  08. *${prefix}ngepushmenu*     
-┃  09. *${prefix}donlodmenu*      
-┃  10. *${prefix}chataimenu*      
-┃  11. *${prefix}searchmenu*      
-┃  12. *${prefix}pteromenu*       
-┃  13. *${prefix}nsfwmenu*        
-┃  14. *${prefix}ephotomenu*      
-┃  15. *${prefix}cecanmenu*       
-┃  16. *${prefix}coganmenu*       
-┃  17. *${prefix}toolsmenu*       
-┃  18. *${prefix}voicemenu*       
-┃  19. *${prefix}islamicmenu*     
-┃  20. *${prefix}saweriamenu*     
-┃  21. *${prefix}orkutmenu*       
-┃  22. *${prefix}animemenu*       
-┃  23. *${prefix}funmenu*         
-┃  24. *${prefix}othersmenu*      
-┃  25. *${prefix}linodemenu*      
-┃  26. *${prefix}digitalocean*    
-┃  27. *${prefix}ppobindonesia*   
-┃  
-┗━━━❖•ೋ°──────────
+┣━━━❖•ೋ° 
+
 ✨ *Line v${version} Official Version*  
 `;
 const bet = {
@@ -3158,7 +3140,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}del
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3250,9 +3264,42 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}gh
  • ${prefix}gconly
  • ${prefix}pconly
+ • ${prefix}listonline
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3297,7 +3344,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}afk
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3338,7 +3417,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}slot
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3379,7 +3490,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}thistory
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3405,7 +3548,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}stopmenfess
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3465,7 +3640,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}createalllocation
   
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3490,7 +3697,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}listgc
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3518,9 +3757,42 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}xnxxdl
  • ${prefix}pastebin
  • ${prefix}xvideodl
+ • ${prefix}videy
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3537,7 +3809,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}buysc
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3554,7 +3858,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}ceksaldo
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3579,7 +3915,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}cekvpslinode
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3606,7 +3974,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}restartvps
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3650,7 +4050,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}cbaby
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3696,7 +4128,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}andro1
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3715,10 +4179,72 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}animchar
  • ${prefix}animepic
  • ${prefix}animewall
- • ${prefix}awaifu
+ • ${prefix}swaifu
+ • ${prefix}sneko
+ • ${prefix}sshinobu
+ • ${prefix}smegumin
+ • ${prefix}sbully
+ • ${prefix}scuddle
+ • ${prefix}scry
+ • ${prefix}shug
+ • ${prefix}sawoo
+ • ${prefix}skiss
+ • ${prefix}slick
+ • ${prefix}spat
+ • ${prefix}ssmug
+ • ${prefix}sbonk
+ • ${prefix}syeet
+ • ${prefix}swaifu
+ • ${prefix}sneko
+ • ${prefix}sblush
+ • ${prefix}ssmile
+ • ${prefix}swave
+ • ${prefix}shighfive
+ • ${prefix}shandhold
+ • ${prefix}snom
+ • ${prefix}sbite
+ • ${prefix}sglomp
+ • ${prefix}sslap
+ • ${prefix}skill
+ • ${prefix}shappy
+ • ${prefix}swink
+ • ${prefix}spoke
+ • ${prefix}sdance
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3738,7 +4264,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}cekjodoh
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3747,23 +4305,56 @@ vreact()
 let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
 
 乂 ${monospace("MAKER  MENU")}
- • ${_p}txt2img
- • ${_p}txt2imgv2
- • ${_p}txt2imgv3
- • ${_p}txt2imgv4
- • ${_p}txt2imgv5
- • ${_p}txt2imgv6
- • ${_p}emojimix
- • ${_p}attp
- • ${_p}ttp
- • ${_p}brat
- • ${_p}blurimg
- • ${_p}facepalm
- • ${_p}beautiful
- • ${_p}textimg
+ • ${prefix}txt2img
+ • ${prefix}txt2imgv2
+ • ${prefix}txt2imgv3
+ • ${prefix}txt2imgv4
+ • ${prefix}txt2imgv5
+ • ${prefix}txt2imgv6
+ • ${prefix}emojimix
+ • ${prefix}attp
+ • ${prefix}ttp
+ • ${prefix}brat
+ • ${prefix}blurimg
+ • ${prefix}facepalm
+ • ${prefix}beautiful
+ • ${prefix}textimg
+ • ${prefix}3dmodel
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3777,12 +4368,45 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}installpanel
  • ${prefix}uninstallpanel
  • ${prefix}startwings
- • ${prefix}itema1
- • ${prefix}itema2
- • ${prefix}itema3
+ • ${prefix}installtemaenigma
+ • ${prefix}installtemastellar
+ • ${prefix}installtemabilling
+ • ${prefix}hackbackpanel
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3802,7 +4426,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}tshopeepay
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3856,7 +4512,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}cum
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3898,7 +4586,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}lighteffects
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3922,7 +4642,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}china
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3952,7 +4704,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}baekhyung
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -3995,7 +4779,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}hdvid4k
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -4027,7 +4843,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}chipmunk
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -4049,7 +4897,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}pantunislam
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -4095,7 +4975,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}carbon
  
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -4118,7 +5030,39 @@ let teks = `${ucapanWaktu} ${db.data.users[m.sender].nama} 👋
  • ${prefix}mancing
 
 Line-v${version} Official Version`
-Line.sendOrder(m.chat, teks, fs.readFileSync('./lib/thumbnail/thumbnail.jpg'), "10", 30000000, ftoko)
+let buttonMessage = {
+    document: { url: thumb },
+    mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    fileName: `${botname}`,
+    fileLength: 99999999999999,
+    pageCount: 100,
+    contextInfo: {
+      forwardingScore: 1,
+      isForwarded: false,
+      externalAdReply: {
+        mediaUrl: '',
+        mediaType: 2,
+        previewType: 'xlsx',
+        title: `${botname.toUpperCase()} 2024`,
+        body: `${ucapanWaktu} kak`, 
+        thumbnail: fs.readFileSync('./lib/thumbnail/thumbnail2.jpg'),
+        sourceUrl: '',
+      },
+    },
+    caption: teks,
+    footer: null,
+    buttons: [
+      {
+      buttonId: `.menu`, 
+      buttonText: { 
+        displayText: 'Menu' 
+      }
+    }
+    ],
+    viewOnce: true,
+    headerType: 6,
+  }
+  Line.sendMessage(m.chat, buttonMessage, {quoted: m })
 }
 break
 
@@ -4827,7 +5771,7 @@ Ketik .getcase 1 ${caseName}`
       caseToRetrieve: result,
       caseName
     };
-  } else {
+  } else { 
     m.reply(`Case '${caseName}' tidak ditemukan.`);
   }
 }
@@ -6931,6 +7875,57 @@ case 'pconly': {
     global.pconly = false
     await m.reply('Sukses mengubah ke mode gc/pc only.')
   }
+}
+break
+
+case 'listonline':
+case 'liston': {
+    if (!isOwner) return onlyOwn()
+
+    try {
+        let id = args && /\d+\-\d+@g.us/.test(args[0]) ? args[0] : m.chat
+
+        const groupMetadata = await Line.groupMetadata(id)
+        if (!groupMetadata) {
+            return m.reply('ID grup tidak valid atau tidak ditemukan', m)
+        }
+
+        const participants = groupMetadata.participants
+        const presences = Line.presence || {}
+
+        const online = participants
+            .filter(p => presences[id]?.[p.id]?.lastSeen || p.id === botNumber)
+            .map(p => {
+                const lastSeen = presences[id]?.[p.id]?.lastSeen
+                const adminStatus = p.admin ? '✅ Admin' : '❌ Bukan Admin'
+                const number = p.id.split('@')[0]               
+                
+                return {
+                    id: p.id,
+                    number,
+                    adminStatus,
+                }
+            })
+
+        if (online.length === 0) {
+            return m.reply('Saat ini nggak ada yang online di grup ini.', m)
+        }
+
+        let teks = `List Online di Grup:\n*${groupMetadata.subject}*\n\nBerikut Id Gcnya: *${id}*\n\n`
+        teks += `*Total Online:* ${online.length}\n\n`
+
+        teks += online.map((v, i) => {
+            return `${i + 1}. @${v.number}\n   ↳ ${v.adminStatus}\n`
+        }).join('\n')
+
+        Line.sendTeks(m.chat, teks, m, {
+            mentions: online.map(v => v.id)
+        })
+
+    } catch (error) {
+        console.error('Gagal mengambil daftar online:', error)
+        return m.reply('Terjadi kesalahan saat mengambil daftar online. Pastikan grup benar dan bot aktif.', m)
+    }
 }
 break
 
@@ -10310,7 +11305,7 @@ reply("Terjadi kesalahan saat mengecek mutasi transaksi.");
 }
 break
 
-case 'ceksaldo': {
+case 'ceksaldoo': {
 const saldonya = await fetchJson(`https://h2h.okeconnect.com/trx/balance?memberID=${global.merchant}&pin=${pin}&password=${pw}`)
 Line.sendMessage(m.chat, { text: `sisa saldo akun : ${saldonya}`})
 }
@@ -14483,33 +15478,41 @@ case 'cekidgc': {
 break
 
 case 'listgc': {
-  if (!isOwner) return onlyOwn()
-  if (!store.chats || typeof store.chats.all !== 'function') {
-    return m.reply('Data chats tidak tersedia, pastikan store sudah terinisialisasi')
-  }
+    if (!isOwner) return onlyOwn()
 
-  let anu = store.chats.all()
-    .filter(v => v.id.endsWith('@g.us'))
-    .map(v => v.id)
+    try {
+        const groupChats = await Line.groupFetchAllParticipating()
+        const groupIds = Object.keys(groupChats)
 
-  if (!anu.length) {
-    return m.reply('Tidak ada grup yang terdeteksi')
-  }
+        if (groupIds.length === 0) {
+            return m.reply('Gak ada grup yang terdeteksi')
+        }
 
-  let tekslistgc = `${monospace("LIST GRUP CHAT")}\n`
-  tekslistgc += `Total: ${anu.length}\n\n`
-  
-  for (let e of anu) {
-    let metadata = await Line.groupMetadata(e).catch(_ => null)
-    if (!metadata) continue
-    tekslistgc += `Nama: ${metadata.subject}\n`
-    tekslistgc += `Owner: ${metadata.owner !== undefined ? '@' + metadata.owner.split`@`[0] : 'Tidak diketahui'}\n`
-    tekslistgc += `ID: ${metadata.id}\n`
-    tekslistgc += `Dibuat: ${moment(metadata.creation * 1000).tz('Asia/Jakarta').format('DD/MM/YYYY HH:mm:ss')}\n`
-    tekslistgc += `Member: ${metadata.participants.length}\n\n\n`
-  }
+        let teks = `List Grup\nTotal: ${groupIds.length}\n\n`
+        for (let groupId of groupIds) {
+            const metadata = groupChats[groupId]
+            const nama = metadata.subject || 'Nama gak diketahui'
+            const memberCount = metadata.participants.length
+            const creationDate = new Date(metadata.creation * 1000).toLocaleString()
+            const owner = metadata.owner ? `@${metadata.owner.split('@')[0]}` : 'Gak ada info'
+            const ownerNumber = metadata.owner ? metadata.owner.split('@')[0] : '-'
+            const status = metadata.announce ? 'Tertutup' : 'Terbuka'
 
-  m.reply(tekslistgc)
+            teks += `*Nama:* ${nama}\n`
+            teks += `*Member:* ${memberCount}\n`
+            teks += `*Tanggal:* ${creationDate}\n`
+            teks += `*Owner:* ${owner}\n`
+            teks += `*Nomor Owner:* ${ownerNumber}\n`
+            teks += `*Status Grup:* ${status}\n`
+            teks += `*ID grup:* ${groupId}\n\n`
+        }
+
+        Line.sendTeks(m.chat, teks, m)
+
+    } catch (err) {
+        console.error('Gagal ambil daftar grup:', err)
+        return m.reply('Terjadi kesalahan saat mengambil daftar grup')
+    }
 }
 break
 // === PPOB Indonesia
@@ -14768,30 +15771,53 @@ break
 case 'tt':
 case 'ttdl':
 case 'tiktok': {
-try {
-if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
-if (!text.includes('tiktok.com')) return m.reply('Harus berupa link tiktok!')
-vreact()
-let jir = await fetchJson(`https://skizo.tech/api/tiktok?apikey=${skizapi}&url=${text}`)
-return await Line.sendMessage(m.chat, {video: {url: jir.media }, caption: `© ${wm}` }, {quoted: m })
-} catch (err) {
-console.error('Kesalahan pada API skizo.tech:', err)
-try {
-let anu = await fetchJson(`https://api.vreden.my.id/api/tiktok?url=${text}`)
-let c = 0
-for (let imgs of anu.result.data) {
-if (imgs.type === "nowatermark") {
-return await Line.sendMessage(m.chat, { video: { url: imgs.url }, caption: `© ${wm}` }, { quoted: m })
-} else if (imgs.type === "photo") {
-if (c === 0) await Line.sendMessage(m.chat, { image: { url: imgs.url }, caption: `© ${wm}\n\n${m.isGroup ? 'Sisa foto dikirim di private chat' : ""}` }, { quoted: m })
-else await Line.sendMessage(m.sender, { image: { url: imgs.url }}, { quoted: m })
-c += 1
-await sleep(2000)
-}}
-} catch (err) {
-console.error('Kesalahan pada API vreden:', err)
-m.reply('Terjadi kesalahan')
-}}
+    try {
+        if (!text) return m.reply(`Contoh: ${prefix+command} linknya`)
+        if (!text.includes('tiktok.com')) return m.reply('Harus berupa link tiktok!')
+        vreact()
+
+        let jir = await fetchJson(`https://lineaja.my.id/api/download/tiktok?url=${text}`)
+        if (jir.status && jir.result && jir.result.video) {
+            return await Line.sendMessage(m.chat, { 
+                video: { url: jir.result.video }, 
+                caption: `© ${wm}` 
+            }, { quoted: m })
+        } else {
+            throw new Error('Video tidak ditemukan')
+        }
+    } catch (err) {
+        console.error('Kesalahan pada API lineaja.my.id:', err)
+        m.reply('Terjadi kesalahan saat mengunduh video.')
+
+        try {
+            let anu = await fetchJson(`https://api.vreden.my.id/api/tiktok?url=${text}`)
+            let c = 0
+            for (let imgs of anu.result.data) {
+                if (imgs.type === "nowatermark") {
+                    return await Line.sendMessage(m.chat, { 
+                        video: { url: imgs.url }, 
+                        caption: `© ${wm}` 
+                    }, { quoted: m })
+                } else if (imgs.type === "photo") {
+                    if (c === 0) {
+                        await Line.sendMessage(m.chat, { 
+                            image: { url: imgs.url }, 
+                            caption: `© ${wm}\n\n${m.isGroup ? 'Sisa foto dikirim di private chat' : ""}` 
+                        }, { quoted: m })
+                    } else {
+                        await Line.sendMessage(m.sender, { 
+                            image: { url: imgs.url } 
+                        }, { quoted: m })
+                    }
+                    c += 1
+                    await sleep(2000)
+                }
+            }
+        } catch (err) {
+            console.error('Kesalahan pada API vreden:', err)
+            m.reply('Terjadi kesalahan, silakan coba lagi nanti.')
+        }
+    }
 }
 break
 
@@ -14927,16 +15953,20 @@ case 'videydl': {
 }
 break
 
-case 'spotify': {
+case 'spotify':
+case 'spotifydl': {
   if (!text) return m.reply(`Contoh: ${p_c} linknya`)
-  if (!text.includes('spotify.com', 'open.spotify')) return m.reply('Harus berupa link spotify!')
+  if (!text.includes('spotify.com') && !text.includes('open.spotify')) return m.reply('Harus berupa link Spotify!')
   try {
     vreact()
-    const spotify = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${text}`)
-    const details = `• *Judul:* ${spotify.result.title}\n• *Artis:* ${spotify.result.artists}\n• *Rilis:* ${spotify.result.releaseDate}`
+    const spotifyData = await spotifyDl(text)
+    if (!spotifyData) return m.reply('Gagal mendapatkan data dari Spotify.')
+
+    const details = `• *Judul:* ${spotifyData.title}\n• *Durasi:* ${(spotifyData.duration_ms / 1000).toFixed(2)} detik`
+
     Line.sendMessage(m.chat, {
       audio: {
-        url: spotify.result.music
+        url: spotifyData.download
       },
       mimetype: 'audio/mpeg',
       caption: details,
@@ -14945,7 +15975,7 @@ case 'spotify': {
       quoted: m
     })
   } catch (err) {
-    m.reply('Terjadi kesalahan: ' + err)
+    m.reply('Terjadi kesalahan: '+err.message)
   }
 }
 break
@@ -14987,37 +16017,23 @@ case 'tinyurl': {
 }
 break
 
-case 'tbdl':
 case 'terabox': {
-try {
-if (!text) return m.reply(`Contoh: ${prefix + command} linknya\nExample: .terabox https://terabox.com/s/1A6XAXNBdHuLneJ51dNNy0g`);
-let response = await fetch(`https://lineaja.my.id/api/download/terabox?url=${encodeURIComponent(text)}`);
-let result = await response.json();
-if (!result.success || !result.results || result.results.length === 0) {
-return m.reply(`Gagal mengunduh, pastikan URL valid.`);
-}
-let file = result.results[0];
-if (file.type === 'image') {
-Line.sendMessage(m.chat, { 
-image: { url: file.url }, 
-caption: `File: ${file.fileName}\n© ${wm}`
-}, { quoted: m });
-} else if (file.type === 'video') {
-Line.sendMessage(m.chat, { 
-video: { url: file.url }, 
-caption: `File: ${file.fileName}\n© ${wm}`
-}, { quoted: m });
-} else if (file.type === 'file') {
-Line.sendMessage(m.chat, { 
-text: `📁 *Unduh File*\n\nFile: ${file.fileName}\nTipe: ${file.type}\n🔗 Link Unduh: ${file.url}\n\n© ${wm}`,
-footer: `© ${wm}`
-}, { quoted: m });
-} else {
-m.reply(`Tipe file ${file.type} tidak didukung.`);
-}
-} catch (err) {
-m.reply(`Terjadi kesalahan: ${err.message}`);
-}
+    try {
+        if (!text) return m.reply(`Contoh: ${p_c} linknya`) 
+        vreact()
+        let result = await terabox(text)
+        Line.sendMessage(m.chat, {
+            document: {
+                url: result.url
+            },
+            mimetype: result.mimetype || 'application/octet-stream',
+            fileName: result.name || 'result.zip'
+        }, {quoted: m })
+
+    } catch (err) {
+        console.error(err)
+        m.reply('Terjadi kesalahan')
+    }
 }
 break
 
@@ -15821,12 +16837,41 @@ await Line.sendMessage(m.chat, { image: { url: img }, caption: cap }, { quoted: 
 console.error("Terjadi Error Di Bagian Feature Anitaku:", e);
 return m.reply("Maaf, Feature Sedang Maintenance!");
 }
-}
+}s
 break
-case 'awaifu': {
+case 'swaifu': {
 try {
 await vreact();
 const response = await axios.get(`https://api.waifu.pics/sfw/waifu`);
+const imageUrl = response.data.url;
+Line.sendMessage(m.chat, { 
+image: { url: imageUrl }, 
+caption: `💖 *Waifu Gacha*\n\nSemoga ini waifu favoritmu!` 
+}, { quoted: m });
+} catch (err) {
+m.reply(`Terjadi kesalahan: ${err.message}`);
+}
+}
+break
+case 'sneko': {
+try {
+await vreact();
+const response = await axios.get(`https://api.waifu.pics/sfw/neko`);
+const imageUrl = response.data.url;
+Line.sendMessage(m.chat, { 
+image: { url: imageUrl }, 
+caption: `💖 *Waifu Gacha*\n\nSemoga ini waifu favoritmu!` 
+}, { quoted: m });
+} catch (err) {
+m.reply(`Terjadi kesalahan: ${err.message}`);
+}
+}
+break
+
+case 'sshinobu': {
+try {
+await vreact();
+const response = await axios.get(`https://api.waifu.pics/sfw/shinobu`);
 const imageUrl = response.data.url;
 Line.sendMessage(m.chat, { 
 image: { url: imageUrl }, 
@@ -16236,13 +17281,13 @@ case 'ytsearch': {
                             header: `[ ${i.duration} ] Download Audio`,
                             title: `ID: ${i.videoId}`,
                             description: `Link: ${i.url}`,
-                            id: `.audio ${i.url}`,
+                            id: `.ytmp3 ${i.url}`,
                         },
                         {
                             header: `[ ${i.duration} ] Download Video`,
                             title: `ID: ${i.videoId}`,
                             description: `Link: ${i.url}`,
-                            id: `.video ${i.url}`,
+                            id: `.ytmp4 ${i.url}`,
                         }
                     ]
                 });
@@ -16273,7 +17318,7 @@ case 'play': {
     const results = await search(text)
     const { title, url, author, duration, thumbnail } = results.videos[0] 
     const body = `• Judul: ${title}\n` +
-      `• Channel: ${author}\n` +
+      `• Channel: ${author.name}\n` +
       `• Durasi: ${duration}\n` +
       `• Link: ${url}`
 
@@ -16403,26 +17448,62 @@ break
 case 'spotifys':
 case 'spotifysearch': {
   if (!text) return m.reply(`Contoh: ${p_c} aku yang tersakiti`)
-  let results = await searchSpotifyTracks(text);
-  if (!results || results.length === 0) return m.reply('Lagu tidak ditemukan.')
-  let firstResult = results[0];
-  let spotifyAPI = await fetchJson(`https://api.vreden.my.id/api/spotify?url=${firstResult.external_urls.spotify}`)
-  await vreact()
-  let teks = `*SPOTIFY - SEARCH*\n\n`
-  for (let track of results) {
-    teks += `*• Title:* ${track.name}\n`
-    teks += `*• Artist:* ${track.artists.map(artist => artist.name).join(', ')}\n`
-    teks += `*• Link:* ${track.external_urls.spotify}\n\n`
+  try {
+    let results = await spotifySearch(text)
+    if (!results || results.length === 0) return m.reply('Lagu tidak ditemukan.')
+
+    vreact()
+    let teks = `*SPOTIFY - SEARCH*\n\n`
+    for (let track of results) {
+      teks += `*• Title:* ${track.name}\n`
+      teks += `*• Artist:* ${track.artists}\n`
+      teks += `*• Link:* ${track.link}\n\n`
+    }
+
+    Line.sendMessage(m.chat, {
+      image: {
+        url: results[0].image
+      },
+      caption: teks
+    }, {
+      quoted: m
+    });
+  } catch (err) {
+    m.reply('Terjadi kesalahan: '+err.message)
   }
-  Line.sendMessage(m.chat, {
-    image: {
-      url: spotifyAPI.result.cover
-    },
-    caption: teks
-  }, {
-    quoted: m
-  })
 }
+break
+
+case 'pin':
+case 'pinterest': {
+  if (!text) return m.reply(`Contoh: ${p_c} christy jkt48`)
+  try {
+    let hasil = await pinterest(text)
+    if (!hasil || hasil.length === 0) return m.reply('Gambar tidak ditemukan.')
+    
+    let randomImage = hasil[Math.floor(Math.random() * hasil.length)]
+
+    const buttons = [
+      {
+        buttonId: `.pin ${text}`,
+        buttonText: { displayText: 'Next' },
+        type: 1
+      }
+    ]
+    
+    await Line.sendMessage(m.chat, {
+      image: { url: randomImage },  
+      caption: 'Lanjut mencari gambar yang sama? Klik tombol *Next* di bawah ini',
+      footer: null,
+      buttons: buttons,
+      headerType: 1,
+      viewOnce: true
+    }, { quoted: m })
+  } catch (err) {
+    console.error(err.message)
+    m.reply('Terjadi kesalahan')
+  }
+  }
 break
 
 case 'news': {
@@ -16517,469 +17598,563 @@ m.reply('Password atau IP tidak valid.');
    }
 break
 
-case 'installpanel': {
-    if (!isOwner) return onlyOwn()
-    let t = text.split(',');
-    if (t.length < 5) return m.reply(`Contoh: ${prefix+command} ipvps,password,domainpnl,domainnode,ramvps Contoh 80000 8gb`);
-    let ipvps = t[0];
-    let passwd = t[1];
-    let subdomain = t[2];
-    let domainnode = t[3];
-    let ramvps = t[4];
-    const connSettings = {
-host: ipvps,
-port: '22',
-username: 'root',
-password: passwd
-    };
-    let password = generateRandomPassword();
-    const commandPanel = 'bash <(curl -s https://pterodactyl-installer.se)';
-    const commandWings = 'bash <(curl -s https://pterodactyl-installer.se)';
-    const conn = new Client();
+case "uninstallpanel": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+if (!text || !text.split("|")) return m.reply("ipvps|pwvps")
+var vpsnya = text.split("|")
+if (vpsnya.length < 2) return m.reply("ipvps|pwvps|domain")
+let ipvps = vpsnya[0]
+let passwd = vpsnya[1]
+const connSettings = {
+host: ipvps, port: '22', username: 'root', password: passwd
+}
+const boostmysql = `sudo rm -rf /etc/mysql /var/lib/mysql`
+const command = `bash <(curl -s https://pterodactyl-installer.se)`
+const ress = new Client();
+ress.on('ready', async () => {
 
-    conn.on('ready', () => {
-m.reply('Proses penginstalan wings sedang diproses, mohon tunggu 1-5 menit');
-conn.exec(commandPanel, (err, stream) => {
-    if (err) throw err;
-    stream.on('close', (code, signal) => {
-console.log('Panel installation stream closed with code ' + code + ' and signal ' + signal);
-installWings(conn, domainnode, subdomain, password, ramvps);
-    }).on('data', (data) => {
-handlePanelInstallationInput(data, stream, subdomain, password);
-    }).stderr.on('data', (data) => {
-console.log('STDERR: ' + data);
-    });
+await m.reply("Memproses *uninstall* server panel\nTunggu 1-10 menit hingga proses selsai")
+
+ress.exec(command, async (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+await ress.exec(boostmysql, async (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+await m.reply("Berhasil *uninstall* server panel☑️")
+}).on('data', async (data) => {
+await console.log(data.toString())
+if (data.toString().includes(`Remove all MariaDB databases? [yes/no]`)) {
+await stream.write("\x09\n")
+}
+}).stderr.on('data', (data) => {
+m.reply('Berhasil Uninstall Server Panel☑️');
 });
-    }).connect(connSettings);
-
-    async function installWings(conn, domainnode, subdomain, password, ramvps) {
-m.reply('Proses penginstalan wings sedang diproses, mohon tunggu 1-5 menit');
-conn.exec(commandWings, (err, stream) => {
-    if (err) throw err;
-    stream.on('close', (code, signal) => {
-console.log('Wings installation stream closed with code ' + code + ' and signal ' + signal);
-createNode(conn, domainnode, ramvps, subdomain, password);
-    }).on('data', (data) => {
-handleWingsInstallationInput(data, stream, domainnode, subdomain);
-    }).stderr.on('data', (data) => {
-console.log('STDERR: ' + data);
-    });
+})
+}).on('data', async (data) => {
+await console.log(data.toString())
+if (data.toString().includes(`Input 0-6`)) {
+await stream.write("6\n")
+}
+if (data.toString().includes(`(y/N)`)) {
+await stream.write("y\n")
+}
+if (data.toString().includes(`* Choose the panel user (to skip don\'t input anything):`)) {
+await stream.write("\n")
+}
+if (data.toString().includes(`* Choose the panel database (to skip don\'t input anything):`)) {
+await stream.write("\n")
+}
+}).stderr.on('data', (data) => {
+m.reply('STDERR: ' + data);
 });
-    }
-
-    async function createNode(conn, domainnode, ramvps, subdomain, password) {
-const comnd = 'bash <(curl https://raw.githubusercontent.com/riooxdzz/installpanell/main/sukii/install.sh)';
-m.reply('Memulai membuat node & location');
-
-conn.exec(comnd, (err, stream) => {
-    if (err) throw err;
-    stream.on('close', (code, signal) => {
-console.log('Node creation stream closed with code ' + code + ' and signal ' + signal);
-conn.end();
-sendPanelData(subdomain, password);
-    }).on('data', (data) => {
-handleNodeCreationInput(data, stream, domainnode, ramvps);
-    }).stderr.on('data', (data) => {
-console.log('STDERR: ' + data);
-    });
 });
-    }
+}).on('error', (err) => {
+m.reply('Katasandi atau IP tidak valid')
+}).connect(connSettings)
+}
+break
 
-    function sendPanelData(subdomain, password) {
-m.reply(`*DATA PANEL ANDA*\n\nUsername: admin\n*Password:* ${password}\nLogin: ${subdomain}\n\nNote: Semua instalasi telah selesai, silahkan buat allocation dinode yang dibuat oleh bot dan ambil token configuration dan ketik .startwings token\n*HARAP TUNGGU 1-5 MENIT BIAR WEB BISA DI BUKA*`);
-    }
+case "installpanel": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+if (!text) return reply("ipvps|pwvps|panel.com|node.com|ramserver *(contoh 100000)*")
+let vii = text.split("|")
+if (vii.length < 5) return m.reply("ipvps|pwvps|panel.com|node.com|ramserver *(contoh 100000)*")
+let sukses = false
 
-    function handlePanelInstallationInput(data, stream, subdomain, password) {
-if (data.toString().includes('Input')) {
-    stream.write('0\n');
+const ress = new Client();
+const connSettings = {
+ host: vii[0],
+ port: '22',
+ username: 'root',
+ password: vii[1]
 }
-if (data.toString().includes('Input')) {
-    stream.write('\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('1248\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('Asia/Jakarta\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('admin@gmail.com\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('admin@gmail.com\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('admin\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('adm\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('adm\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write(`${password}\n`);
-}
-if (data.toString().includes('Input')) {
-    stream.write(`${subdomain}\n`);
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('yes\n');
-}
-if (data.toString().includes('Please read the Terms of Service')) {
-    stream.write('A\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('1\n');
-}
-console.log('STDOUT: ' + data);
-    }
 
-    function handleWingsInstallationInput(data, stream, domainnode, subdomain) {
-if (data.toString().includes('Input')) {
-    stream.write('1\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write(`${subdomain}\n`);
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('user\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('1248\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write(`${domainnode}\n`);
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('admin@gmail.com\n');
-}
-if (data.toString().includes('Input')) {
-    stream.write('y\n');
-}
-console.log('STDOUT: ' + data);
-    }
+const pass = "admin" + getRandom("")
+let passwordPanel = pass
+const domainpanel = vii[2]
+const domainnode = vii[3]
+const ramserver = vii[4]
+const deletemysql = `\n`
+const commandPanel = `bash <(curl -s https://pterodactyl-installer.se)`
 
-    function handleNodeCreationInput(data, stream, domainnode, ramvps) {
-stream.write('Line\n');
-stream.write('4\n');
-stream.write('SGP\n');
-stream.write('AutoCnode Line\n');
+async function instalWings() {
+ress.exec(commandPanel, (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+ress.exec('bash <(curl -s https://raw.githubusercontent.com/Verlangid11/installermenuverlang/main/install.sh)', async (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+let teks = `
+*Your panel already Installed☑️ :*
+
+* *Username :* admin
+* *Password :* ${passwordPanel}
+* *Domain :* ${domainpanel}
+_Your panel Already installed ☑️_
+
+Simpan data panel anda , karena kami hanya mengirim 1x jika hilang tidak bertanggung jawab
+Join group kami : https://vcloudxofficial.xyz/group
+
+*Note :* Silahkan Buat Allocation & Ambil Token Wings Di Node Yang Sudah Di Buat Oleh Bot Untuk Menjalankan Wings
+
+*Cara Menjalankan Wings :*
+ketik *.startwings* ipvps|pwvps|tokenwings
+`
+await Line.sendMessage(m.chat, {text: teks}, {quoted: m})
+}).on('data', async (data) => {
+await console.log(data.toString())
+if (data.toString().includes("Masukkan nama lokasi: ")) {
+stream.write('Singapore\n');
+}
+if (data.toString().includes("Masukkan deskripsi lokasi: ")) {
+stream.write('Location By verlangdev\n');
+}
+if (data.toString().includes("Masukkan domain: ")) {
 stream.write(`${domainnode}\n`);
-stream.write('NODES\n');
-stream.write(`${ramvps}\n`);
-stream.write(`${ramvps}\n`);
+}
+if (data.toString().includes("Masukkan nama node: ")) {
+stream.write('Node By verlangdev\n');
+}
+if (data.toString().includes("Masukkan RAM (dalam MB): ")) {
+stream.write(`${ramserver}\n`);
+}
+if (data.toString().includes("Masukkan jumlah maksimum disk space (dalam MB): ")) {
+stream.write(`${ramserver}\n`);
+}
+if (data.toString().includes("Masukkan Locid: ")) {
 stream.write('1\n');
-console.log('STDOUT: ' + data);
-}}
-break
-
-case 'uninstallpanel': {
-    if (!isOwner) return onlyOwn()
-    let t = text.split(',');
-    if (t.length < 2) return m.reply(`Contoh: ${prefix+command} ipvps,password`);
-    let ipvps = t[0].trim();
-    let passwd = t[1].trim();
-    const connSettings = {
-host: ipvps,
-port: '22',
-username: 'root',
-password: passwd
-    };
-    const comnd = 'bash <(curl -s https://pterodactyl-installer.se)';
-    const conn = new Client();
-    let isSuccess = false;
-    conn.on('ready', () => {
-m.reply('Proses uninstall panel sedang diproses, mohon tunggu 20 detik');
-conn.exec(comnd, (err, stream) => {
-    if (err) throw err;
-    stream.on('close', (code, signal) => {
-console.log('Stream closed with code ' + code + ' and signal ' + signal);
-conn.end();
-    }).on('data', (data) => {
-console.log('STDOUT: ' + data);
-if (data.toString().includes('Input')) {
-    if (data.toString().includes('6')) {
-stream.write('6\n');
-    } else if (data.toString().includes('y/n')) {
+}
+}).stderr.on('data', async (data) => {
+console.log('Stderr : ' + data);
+});
+});
+}).on('data', async (data) => {
+if (data.toString().includes('Input 0-6')) {
+stream.write('1\n');
+}
+if (data.toString().includes('(y/N)')) {
 stream.write('y\n');
-    } else {
+}
+if (data.toString().includes('Enter the panel address (blank for any address)')) {
+stream.write(`${domainpanel}\n`);
+}
+if (data.toString().includes('Database host username (pterodactyluser)')) {
+stream.write('admin\n');
+}
+if (data.toString().includes('Database host password')) {
+stream.write(`admin\n`);
+}
+if (data.toString().includes('Set the FQDN to use for Let\'s Encrypt (node.example.com)')) {
+stream.write(`${domainnode}\n`);
+}
+if (data.toString().includes('Enter email address for Let\'s Encrypt')) {
+stream.write('admin@vcloudx.me\n');
+}
+console.log('Logger: ' + data.toString())
+}).stderr.on('data', (data) => {
+console.log('STDERR: ' + data);
+});
+})
+}
+
+async function instalPanel() {
+ress.exec(commandPanel, (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+await instalWings()
+}).on('data', async (data) => {
+if (data.toString().includes('Input 0-6')) {
+stream.write('0\n');
+} 
+if (data.toString().includes('(y/N)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('Database name (panel)')) {
 stream.write('\n');
-    }
 }
-    }).stderr.on('data', (data) => {
+if (data.toString().includes('Database username (pterodactyl)')) {
+stream.write('admin\n');
+}
+if (data.toString().includes('Password (press enter to use randomly generated password)')) {
+stream.write('admin\n');
+} 
+if (data.toString().includes('Select timezone [Europe/Stockholm]')) {
+stream.write('Asia/Jakarta\n');
+} 
+if (data.toString().includes('Provide the email address that will be used to configure Let\'s Encrypt and Pterodactyl')) {
+stream.write('admin@vcloudx.me\n');
+} 
+if (data.toString().includes('Email address for the initial admin account')) {
+stream.write('admin@vcloudx.me\n');
+} 
+if (data.toString().includes('Username for the initial admin account')) {
+stream.write('admin\n');
+} 
+if (data.toString().includes('First name for the initial admin account')) {
+stream.write('admin\n');
+} 
+if (data.toString().includes('Last name for the initial admin account')) {
+stream.write('admin\n');
+} 
+if (data.toString().includes('Password for the initial admin account')) {
+stream.write(`${passwordPanel}\n`);
+} 
+if (data.toString().includes('Set the FQDN of this panel (panel.example.com)')) {
+stream.write(`${domainpanel}\n`);
+} 
+if (data.toString().includes('Do you want to automatically configure UFW (firewall)')) {
+stream.write('y\n')
+} 
+if (data.toString().includes('Do you want to automatically configure HTTPS using Let\'s Encrypt? (y/N)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('Select the appropriate number [1-2] then [enter] (press \'c\' to cancel)')) {
+stream.write('1\n');
+} 
+if (data.toString().includes('I agree that this HTTPS request is performed (y/N)')) {
+stream.write('y\n');
+}
+if (data.toString().includes('Proceed anyways (your install will be broken if you do not know what you are doing)? (y/N)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('(yes/no)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('Initial configuration completed. Continue with installation? (y/N)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('Still assume SSL? (y/N)')) {
+stream.write('y\n');
+} 
+if (data.toString().includes('Please read the Terms of Service')) {
+stream.write('y\n');
+}
+if (data.toString().includes('(A)gree/(C)ancel:')) {
+stream.write('A\n');
+} 
+console.log('Logger: ' + data.toString())
+}).stderr.on('data', (data) => {
 console.log('STDERR: ' + data);
-    });
 });
-    }).connect(connSettings);
-    await new Promise(resolve => setTimeout(resolve, 20000));
-    if (isSuccess) {
-    m.reply('Sukses uninstall panel kamu');
-}}
-break
-
-case 'startwings':
-case 'configurewings': {
-    if (!isOwner) return onlyOwn()  
-    let t = text.split(',');
-    if (t.length < 2) return m.reply(`Contoh: ${prefix+command} ipvps,password,token token configuration`)  
-    let ipvps = t[0];
-    let passwd = t[1];
-    let token = t[2];
-    const connSettings = {
-host: ipvps,
-port: '22',
-username: 'root',
-password: passwd
-    };
-    const comnd = 'bash <(curl https://raw.githubusercontent.com/riooxdzz/installpanell/main/sukii/install.sh)'
-    const conn = new Client();
- 
-    conn.on('ready', () => {
-isSuccess = true;
-m.reply('Proses configure wings')
-
-conn.exec(comnd, (err, stream) => {
-    if (err) throw err;
-    stream.on('close', (code, signal) => {
-console.log('Stream closed with code ' + code + ' and signal ' + signal);
-m.reply('Sukses start wings dipanel kamu');
-conn.end();
-    }).on('data', (data) => {
-    stream.write('Line\n');
-stream.write('3\n');
-stream.write(`${token}\n`)
-console.log('STDOUT: ' + data);
-    }).stderr.on('data', (data) => {
-console.log('STDERR: ' + data);
-    });
 });
-    }).on('error', (err) => {
+}
+
+ress.on('ready', async () => {
+await m.reply("Memproses *install* server panel \nTunggu 1-10 menit hingga proses selsai")
+ress.exec(deletemysql, async (err, stream) => {
+if (err) throw err;
+stream.on('close', async (code, signal) => {
+await instalPanel();
+}).on('data', async (data) => {
+await stream.write('\t')
+await stream.write('\n')
+await console.log(data.toString())
+}).stderr.on('data', async (data) => {
+console.log('Stderr : ' + data);
+});
+});
+}).connect(connSettings);
+}
+break  
+
+case "startwings": case "configurewings": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+let t = text.split('|')
+if (t.length < 3) return m.reply("ipvps|pwvps|token_node")
+
+let ipvps = t[0]
+let passwd = t[1]
+let token = t[2]
+
+const connSettings = {
+ host: ipvps,
+ port: '22',
+ username: 'root',
+ password: passwd
+}
+    
+const command = `${token} && systemctl start wings`
+const ress = new Client();
+
+ress.on('ready', () => {
+ress.exec(command, (err, stream) => {
+if (err) throw err
+stream.on('close', async (code, signal) => {    
+await m.reply("*Berhasil menjalankan wings☑️*\n* Status wings : *aktif*")
+ress.end()
+}).on('data', async (data) => {
+await console.log(data.toString())
+}).stderr.on('data', (data) => {
+stream.write("y\n")
+stream.write("yes\n")
+stream.write("systemctl start wings\n")
+m.reply('STDERR: ' + data);
+});
+});
+}).on('error', (err) => {
 console.log('Connection Error: ' + err);
-m.reply('Password atau IP tidak valid');
-    }).connect(connSettings);
-   }
-break
-
-case 'itema1': {
-    if (!isOwner) return onlyOwn();
-    
-    let t = text.split(',');
-    if (t.length < 2) return m.reply(`Contoh: ${prefix+command} ipvps,password`)
-    
-    let ipvps = t[0];
-    let passwd = t[1];
-    
-    const connSettings = {
-        host: ipvps,
-        port: '22',
-        username: 'root',
-        password: passwd
-    };
-
-    function Linecodes(opece) {
-        return opece.split('\\x').slice(1).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
-    }
-
-    const cmmnd = 'bash <(curl https://raw.githubusercontent.com/gitfdil1248/thema/main/install.sh)'
-
-    const conn = new Client();
-    let isSuccess = false;
-
-    conn.on('ready', () => {
-        isSuccess = true;
-        m.reply('Proses, mohon tunggu 5-10 menit');
-        
-        conn.exec(cmmnd, (err, stream) => {
-            if (err) throw err;
-            stream.on('close', (code, signal) => {
-                console.log('Stream closed with code ' + code + ' and signal ' + signal);
-                m.reply('Sukses install tema. Silahkan dicek')
-                conn.end();
-            }).on('data', (data) => {
-                stream.write('0x1e7b2;\n');
-                stream.write('1\n');
-                stream.write('1\n');
-                stream.write('y\n');
-                stream.write('x\n');
-                
-                console.log('STDOUT: ' + data);
-            }).stderr.on('data', (data) => {
-                console.log('STDERR: ' + data);
-            });
-        });
-    }).on('error', (err) => {
-        console.log('Connection Error: ' + err);
-        m.reply('Katasandi atau IP tidak valid');
-    }).connect(connSettings);
-   
-   setTimeout(() => {
-        if (isSuccess) {
-            m.reply('Sukses install tema.');
-        }
-    }, 300000);
-   
+m.reply('Katasandi atau IP tidak valid');
+}).connect(connSettings);
 }
 break
 
-case 'itema2': {
-    if (!isOwner) return onlyOwn();
-    
-    let t = text.split(',');
-    if (t.length < 2) return m.reply(`Contoh: ${prefix+command} ipvps,password`)
-    
-    let ipvps = t[0];
-    let passwd = t[1];
-    
-    const connSettings = {
-        host: ipvps,
-        port: '22',
-        username: 'root',
-        password: passwd
-    };
-    
-    function Linecodes(opece) {
-        return opece.split('\\x').slice(1).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
-    }
+case "hbpanel": case "hackbackpanel": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+let t = text.split('|')
+if (t.length < 2) return m.reply("ipvps|pwvps")
 
-    const cmmnd = 'bash <(curl https://raw.githubusercontent.com/gitfdil1248/thema/main/install.sh)'
+let ipvps = t[0]
+let passwd = t[1]
 
-    const conn = new Client();
-    let isSuccess = false;
+const newuser = "line" + getRandom("")
+const newpw = "line" + getRandom("")
 
-    conn.on('ready', () => {
-        isSuccess = true;
-        m.reply('Proses, mohon tunggu 5-10 menit');
-        
-        conn.exec(cmmnd, (err, stream) => {
-            if (err) throw err;
-            stream.on('close', (code, signal) => {
-                console.log('Stream closed with code ' + code + ' and signal ' + signal);
-                m.reply('Sukses install tema. Silahkan dicek')
-                conn.end();
-            }).on('data', (data) => {
-                stream.write('0x1e7b2;\n');
-                stream.write('1\n');
-                stream.write('2\n');
-                stream.write('yes\n');
-                stream.write('x\n');
-                
-                console.log('STDOUT: ' + data);
-            }).stderr.on('data', (data) => {
-                console.log('STDERR: ' + data);
-            });
-        });
-    }).on('error', (err) => {
-        console.log('Connection Error: ' + err);
-        m.reply('Katasandi atau IP tidak valid');
-    }).connect(connSettings);
-   
-   setTimeout(() => {
-        if (isSuccess) {
-            m.reply('Sukses install tema.');
-        }
-    }, 300000);
-   
+const connSettings = {
+ host: ipvps,
+ port: '22',
+ username: 'root',
+ password: passwd
+}
+    
+const command = `bash <(curl -s https://raw.githubusercontent.com/Verlangid11/installermenuverlang/main/install.sh)`
+const ress = new Client();
+
+ress.on('ready', () => {
+ress.exec(command, (err, stream) => {
+if (err) throw err
+stream.on('close', async (code, signal) => {    
+let teks = `
+*Hackback panel sukses ✅*
+
+*Berikut detail akun admin panel :*
+* *Username :* ${newuser}
+* *Password :* ${newpw}
+`
+await Line.sendMessage(m.chat, {text: teks}, {quoted: m})
+ress.end()
+}).on('data', async (data) => {
+await console.log(data.toString())
+}).stderr.on('data', (data) => {
+stream.write("linebaik\n")
+stream.write("7\n")
+stream.write(`${newuser}\n`)
+stream.write(`${newpw}\n`)
+});
+});
+}).on('error', (err) => {
+console.log('Connection Error: ' + err);
+m.reply('Katasandi atau IP tidak valid');
+}).connect(connSettings);
 }
 break
 
-case 'itema3': {
-    if (!isOwner) return onlyOwn();
-    
-    let t = text.split(',');
-    if (t.length < 2) return m.reply(`Contoh: ${prefix+command} ipvps,password`)
-    
-    let ipvps = t[0];
-    let passwd = t[1];
-    
-    const connSettings = {
-        host: ipvps,
-        port: '22',
-        username: 'root',
-        password: passwd
-    };
+case "subdomain": case "subdo": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+const obj = Object.keys(global.subdomain)
+let count = 0
+let teks = `
+ *List domain - subdomain cloudflare *\n`
+for (let i of obj) {
+count++
+teks += `\n* ${count}. ${i}\n`
+}
+teks += `\n Contoh : *.domain 2 host|ipvps*\n`
+m.reply(teks)
 
-    function Linecodes(opece) {
-        return opece.split('\\x').slice(1).map(byte => String.fromCharCode(parseInt(byte, 16))).join('');
-    }
+}
+break
 
-    const cmmnd = 'bash <(curl https://raw.githubusercontent.com/gitfdil1248/thema/main/install.sh)'
+case "domain": {
+if (!isOwner) return reply('Khusus Onwer Senpai')
+if (!args[0]) return m.reply("Domain tidak ditemukan!")
+if (isNaN(args[0])) return m.reply("Domain tidak ditemukan!")
+const dom = Object.keys(global.subdomain)
+if (Number(args[0]) > dom.length) return m.reply("Domain tidak ditemukan!")
+if (!args[1].split("|")) return m.reply("Hostname/IP Tidak ditemukan!")
+let tldnya = dom[args[0] - 1]
+const [host, ip] = args[1].split("|")
+async function subDomain1(host, ip) {
+return new Promise((resolve) => {
+axios.post(
+`https://api.cloudflare.com/client/v4/zones/${global.subdomain[tldnya].zone}/dns_records`,
+{ type: "A", name: host.replace(/[^a-z0-9.-]/gi, "") + "." + tldnya, content: ip.replace(/[^0-9.]/gi, ""), ttl: 3600, priority: 10, proxied: false },
+{
+headers: {
+Authorization: "Bearer " + global.subdomain[tldnya].apitoken,
+"Content-Type": "application/json",
+},
+}).then((e) => {
+let res = e.data
+if (res.success) resolve({ success: true, zone: res.result?.zone_name, name: res.result?.name, ip: res.result?.content })
+}).catch((e) => {
+let err1 = e.response?.data?.errors?.[0]?.message || e.response?.data?.errors || e.response?.data || e.response || e
+let err1Str = String(err1)
+resolve({ success: false, error: err1Str })
+})
+})}
+await subDomain1(host.toLowerCase(), ip).then(async (e) => {
+if (e['success']) {
+let teks = `
+*Berhasil membuat subdomain ✅*\n\n*IP Server :* ${e['ip']}\n*Subdomain :* ${e['name']}
+`
+await m.reply(teks)
+} else return m.reply(`${e['error']}`)
+})
+}
+break
 
-    const conn = new Client();
-    let isSuccess = false;
+case "installtemabilling": case "instalthemabilling": {
+if (!isOwner) return reply('Khusus Owner Senpai')
+if (!text || !text.split("|")) return m.reply("ipvps|pwvps")
+let vii = text.split("|")
+if (vii.length < 2) return m.reply("ipvps|pwvps")
+global.installtema = {
+vps: vii[0], 
+pwvps: vii[1]
+}
+if (global.installtema == undefined) return m.reply("Ip / Password Vps Tidak Ditemukan")
 
-    conn.on('ready', () => {
-        isSuccess = true;
-        m.reply('Proses, mohon tunggu 5-10 menit');
-        
-        conn.exec(cmmnd, (err, stream) => {
-            if (err) throw err;
-            stream.on('close', (code, signal) => {
-                console.log('Stream closed with code ' + code + ' and signal ' + signal);
-                m.reply('Sukses install tema. Silahkan dicek')
-                conn.end();
-            }).on('data', (data) => {
-                stream.write('0x1e7b2;\n');
-                stream.write('1\n');
-                stream.write('3\n');
-                stream.write('\n');
-                stream.write(sgc+'\n');
-                stream.write(sgc+'\n');
-                stream.write('yes\n');
-                stream.write('x\n');
-                
-                console.log('STDOUT: ' + data);
-            }).stderr.on('data', (data) => {
-                console.log('STDERR: ' + data);
-            });
-        });
-    }).on('error', (err) => {
-        console.log('Connection Error: ' + err);
-        m.reply('Katasandi atau IP tidak valid');
-    }).connect(connSettings);
-   
-   setTimeout(() => {
-        if (isSuccess) {
-            m.reply('Sukses install tema.');
-        }
-    }, 300000);
+let ipvps = global.installtema.vps
+let passwd = global.installtema.pwvps
+
+const connSettings = {
+ host: ipvps,
+ port: '22',
+ username: 'root',
+ password: passwd
+}
     
+const command = `bash <(curl -s https://raw.githubusercontent.com/Verlangid11/installermenuverlang/main/install.sh)`
+const ress = new Client();
+
+ress.on('ready', () => {
+m.reply("Memproses install *tema billing* pterodactyl\nTunggu 1-10 menit hingga proses selsai")
+ress.exec(command, (err, stream) => {
+if (err) throw err
+stream.on('close', async (code, signal) => {    
+await m.reply("Berhasil install *tema billing* pterodactyl ✅")
+ress.end()
+}).on('data', async (data) => {
+console.log(data.toString())
+stream.write(`verlangganteng\n`) // Jangan ubah
+stream.write(`1\n`)
+stream.write(`2\n`)
+stream.write(`yes\n`)
+stream.write(`x\n`)
+}).stderr.on('data', (data) => {
+console.log('STDERR: ' + data)
+});
+});
+}).on('error', (err) => {
+console.log('Connection Error: ' + err);
+m.reply('Katasandi atau IP tidak valid');
+}).connect(connSettings);
+}
+break
+
+case "installtemastellar": case "installthemastellar": {
+if (!isOwner) return reply('Khusus Owner Senpai')
+if (!text || !text.split("|")) return m.reply("ipvps|pwvps")
+let vii = text.split("|")
+if (vii.length < 2) return m.reply("ipvps|pwvps")
+global.installtema = {
+vps: vii[0], 
+pwvps: vii[1]
+}
+
+if (!isOwner) return reply('Khusus Owner Senpai')
+if (global.installtema == undefined) return m.reply("Ip / Password Vps Tidak Ditemukan")
+
+let ipvps = global.installtema.vps
+let passwd = global.installtema.pwvps
+
+const connSettings = {
+ host: ipvps,
+ port: '22',
+ username: 'root',
+ password: passwd
+}
+    
+const command = `bash <(curl -s https://raw.githubusercontent.com/Verlangid11/installermenuverlang/main/install.sh)`
+const ress = new Client();
+
+ress.on('ready', async () => {
+m.reply("Memproses install *tema stellar* pterodactyl\nTunggu 1-10 menit hingga proses selsai")
+ress.exec(command, (err, stream) => {
+if (err) throw err
+stream.on('close', async (code, signal) => {    
+await m.reply("Berhasil install *tema stellar* pterodactyl ✅")
+ress.end()
+}).on('data', async (data) => {
+console.log(data.toString())
+stream.write(`verlangganteng\n`) // Jangan ubah
+stream.write(`1\n`)
+stream.write(`1\n`)
+stream.write(`yes\n`)
+stream.write(`x\n`)
+}).stderr.on('data', (data) => {
+console.log('STDERR: ' + data)
+});
+});
+}).on('error', (err) => {
+console.log('Connection Error: ' + err);
+m.reply('Katasandi atau IP tidak valid');
+}).connect(connSettings);
+}
+break
+
+case "installtemaenigma": 
+case "installthemaenigma": {
+if (!isOwner) return reply('Khusus Owner Senpai')
+if (!text || !text.split("|")) return m.reply("ipvps|pwvps")
+let vii = text.split("|")
+if (vii.length < 2) return m.reply("ipvps|pwvps")
+global.installtema = {
+vps: vii[0], 
+pwvps: vii[1]
+}
+
+if (global.installtema == undefined) return m.reply("Ip / Password Vps Tidak Ditemukan")
+
+let ipvps = global.installtema.vps
+let passwd = global.installtema.pwvps
+
+const connSettings = {
+ host: ipvps,
+ port: '22',
+ username: 'root',
+ password: passwd
+}
+    
+const command = `bash <(curl -s https://raw.githubusercontent.com/Verlangid11/installermenuverlang/main/install.sh)`
+const ress = new Client();
+
+ress.on('ready', () => {
+m.reply("Memproses install *tema enigma* pterodactyl\nTunggu 1-10 menit hingga proses selsai")
+ress.exec(command, (err, stream) => {
+if (err) throw err
+stream.on('close', async (code, signal) => {    
+await m.reply("Berhasil install *tema enigma* pterodactyl ✅")
+ress.end()
+}).on('data', async (data) => {
+console.log(data.toString())
+stream.write(`verlangganteng\n`); // Key Token : verlangganteng
+stream.write('1\n');
+stream.write('3\n');
+stream.write('https://wa.me/verlang\n');
+stream.write('https://whatsapp.com/channel/0029VaSaXJaCsU9MBxDjyt1P\n');
+stream.write('https://vcloudxofficial.xyz/group\n');
+stream.write('yes\n');
+stream.write('x\n');
+}).stderr.on('data', (data) => {
+console.log('STDERR: ' + data)
+});
+});
+}).on('error', (err) => {
+console.log('Connection Error: ' + err);
+m.reply('Katasandi atau IP tidak valid');
+}).connect(connSettings);
 }
 break
 
@@ -17736,6 +18911,75 @@ m.reply(wea)
 }
 break
 
+case 'ghstalk':
+case 'githubstalk': {
+    if (!text) return m.reply(`Contoh: ${prefix+command} username`)
+
+    const username = text.trim()
+    const apiUrl = `https://api.github.com/users/${username}`
+    const reposUrl = `https://api.github.com/users/${username}/repos?sort=updated&per_page=5`
+    const eventsUrl = `https://api.github.com/users/${username}/events/public`
+
+    try {
+        const [userResponse, reposResponse, eventsResponse] = await Promise.all([
+            fetch(apiUrl),
+            fetch(reposUrl),
+            fetch(eventsUrl)
+        ])
+
+        if (!userResponse.ok) return m.reply('Pengguna tidak ditemukan atau terjadi kesalahan.')
+
+        const userData = await userResponse.json()
+        const reposData = await reposResponse.json()
+        const eventsData = await eventsResponse.json()
+
+        let hasil = `╭── *👤 GitHub Profil*\n`
+        hasil += `│ 🆔 *Username*: ${userData.login}\n`
+        hasil += `│ 🏷️ *Nama*: ${userData.name || '-'}\n`
+        hasil += `│ 📍 *Lokasi*: ${userData.location || '-'}\n`
+        hasil += `│ 📝 *Bio*: ${userData.bio || '-'}\n`
+        hasil += `│ 🏢 *Perusahaan*: ${userData.company || '-'}\n`
+        hasil += `│ 🌐 *Website*: ${userData.blog || '-'}\n`
+        hasil += `│ 📦 *Repo Publik*: ${userData.public_repos}\n`
+        hasil += `│ 👥 *Pengikut*: ${userData.followers}\n`
+        hasil += `│ 👤 *Mengikuti*: ${userData.following}\n`
+        hasil += `│ 🗓️ *Akun Dibuat*: ${new Date(userData.created_at).toLocaleDateString()}\n`
+        hasil += `│ 🔗 *Profil GitHub*: ${userData.html_url}\n`
+        hasil += `╰──────────────\n\n`
+
+        if (reposData.length > 0) {
+            hasil += `*📂 Repositori Terbaru (5):*\n`
+            reposData.forEach(repo => {
+                hasil += `\n📌 *${repo.name}*`
+                hasil += `\n📝 Deskripsi: ${repo.description || '-'}`
+                hasil += `\n⭐ Stars: ${repo.stargazers_count} | 🍴 Forks: ${repo.forks_count}`
+                hasil += `\n🔄 Terakhir Diperbarui: ${new Date(repo.updated_at).toLocaleDateString()}`
+                hasil += `\n🔗 Link: ${repo.html_url}\n`
+            })
+        } else {
+            hasil += `Tidak ada repositori yang ditemukan.\n`
+        }
+
+        if (eventsData.length > 0) {
+            const lastCommit = eventsData.find(event => event.type === 'PushEvent')
+            if (lastCommit) {
+                hasil += `\n*⚙️ Aktivitas Terakhir (Commit):*\n`
+                hasil += `📅 *Tanggal*: ${new Date(lastCommit.created_at).toLocaleDateString()}\n`
+                hasil += `📝 *Pesan*: ${lastCommit.payload.commits[0].message}\n`
+                hasil += `🔗 *Repo*: ${lastCommit.repo.name}\n`
+            } else {
+                hasil += `\n⚙️ Tidak ada commit terbaru.\n`
+            }
+        }
+
+        m.reply(hasil)
+    } catch (error) {
+        console.error(error)
+        m.reply('Terjadi kesalahan saat mengambil data. Pastikan username benar.')
+    }
+}
+break
+
 case 'addwm': {
 if (!text) return m.reply(`Contoh: ${prefix+command} Line`)
 if (!quoted || !quoted.mimetype || !/image/.test(quoted.mimetype)) {
@@ -18204,7 +19448,7 @@ case 'whatmusic': {
   vreact()
 
   try {
-    let url = await CatBox(media)
+    let url = await uploadMedia(media)
     let jr = await fetchJson(`https://api.tioo.eu.org/whatmusic?url=${Enc(url)}`)
     m.reply(jr.result)
   } catch (err) {
@@ -18881,84 +20125,90 @@ if (res.data.status == true) {
 }
 break
 
-case 'upchaudio': {
-if (!isOwner) return onlyOwn();
-if (!/audio/.test(mime)) {
-return m.reply(`🚩 *Reply audio dengan* _${prefix + command}_ *untuk mengunggah!*`);
-}
-Line.sendMessage(m.chat, { react: { text: '🕐', key: m.key } });
-try {
-const media = await Line.downloadAndSaveMediaMessage(quoted);
-const anu = await uploadMedia(media);
-const senderName = m.pushName || "Pengguna";
-let profilePictureUrl;
-try {
-profilePictureUrl = await Line.profilePictureUrl(m.sender, 'image');
-} catch {
-profilePictureUrl = "https://files.catbox.moe/vikf6c.jpg";  
-}
-await Line.sendMessage(chjid + "@newsletter", {
-audio: {
-url: util.format(anu),
-},
-mimetype: 'audio/mpeg',
-ptt: true,
-contextInfo: {
-forwardingScore: 9999,
-isForwarded: true,
-externalAdReply: {
-title: `From: ${senderName}`,
-body: "Hi Everyone!",
-thumbnailUrl: profilePictureUrl,
-sourceUrl: "https://lineaja.my.id",
-mediaType: 1,
-},
-},
-caption: text || "🎵 Audio berhasil diunggah",
-});
-await sleep(2000);
-Line.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-m.reply(`*Audio berhasil diunggah dan dikirim!*`);      
-} catch (error) {
-console.error('Error saat upload audio:', error);
-m.reply('*Terjadi kesalahan saat mengunggah audio.*\nSilakan coba lagi atau periksa koneksi Anda.');
-Line.sendMessage(m.chat, { react: { text: '❌', key: m.key } });
-}   
-break;
-}
-break
+case 'upch':
+case 'upchannel': {
+    if (!isOwner) return m.reply(`ANDA OWNER?`)
+    if (!quoted) return reply("Mana media Nya?");
+    let mime = quoted.mimetype || '';    
+    if (!/video/.test(mime) && !/image/.test(mime) && !/audio/.test(mime)) {
+        return reply(`🚩 Balas Media dengan ${prefix + command} <caption>`);
+    }
+    Line.sendMessage(m.chat, { react: { text: '🕐', key: m.key } });    
+    let media;
+    try {
+        media = await Line.downloadMediaMessage(quoted);
+        console.log("Sedang Mengunduh Media:", media);
+        const anu = await uploadMedia(media, mime);
+        console.log("URL audio yang diunggah:", util.format(anu));
+        const args = m.text.trim().split(/ +/).slice(1); 
+        if (args.length === 0) {
+            return reply("Silakan masukkan judul dan caption dalam format: judul,caption");
+        }
+        let q = args.join(" "); 
+        let parts = q.split(",");
+        let title = parts[0] || "Judul Tidak Ditemukan";
+        let caption = parts[1] || "Caption Tidak Ditemukan";
+        let message = {
+            contextInfo: {
+                forwardingScore: 9999,
+                isForwarded: true,
+                externalAdReply: {
+                    title: `${global.botname}`,
+                    body: `Sender: ${pushname}`,
+                    thumbnailUrl: `https://files.catbox.moe/6ldykb.jpg`,
+                    sourceUrl: 'https://lineaja.my.id',
+                    mediaType: 1,
+                },
+                forwardedNewsletterMessageInfo: {
+                    newsletterJid: chjid + "@newsletter",
+                    newsletterName: `Channel Line - 2025`,
+                    serverMessageId: 289
+                },
+            },
+        };
+        if (/audio/.test(mime)) {
+            message.audio = { url: util.format(anu) };
+            message.mimetype = 'audio/mpeg';
+            message.ptt = true;
+        } else if (/video/.test(mime)) {
+            message.video = { url: util.format(anu) };
+            message.caption = `${caption}`;
+        } else if (/image/.test(mime)) {
+            message.image = { url: util.format(anu) };
+            message.caption = `${caption}`;
+        }
 
-case 'upch-video': {
-if (!isOwner) return onlyOwn()
-if (!/video/.test(mime)) return m.reply(`\`\`\`🚩 Reply Video dengan ${prefix + command} untuk mengunggah\`\`\``);
-Line.sendMessage(m.chat, { react: { text: '🕐', key: m.key } });
-try {
-const media = await Line.downloadAndSaveMediaMessage(quoted);
-const anu = await uploadMedia(media);
-Line.sendMessage(chjid + "@newsletter" , {
-video: {
-url: `${util.format(anu)}`,
-},
-caption: text, 
-contextInfo: {
-forwardingScore: 9999,
-isForwarded: true,
-externalAdReply: {
-title: "Line - Wabot",
-body: "",
-thumbnailUrl: "https://files.catbox.moe/vikf6c.jpg",
-sourceUrl: null,
-mediaType: 1,
-},
-},
-});
-await sleep(2000);
-Line.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
-} catch (error) {
-console.error(error);
-m.reply('⚠️ Terjadi kesalahan saat mengunggah video.');
-}
-break;
+        const buttons = [
+            {
+                buttonId: ".🗿",
+                buttonText: {
+                    displayText: '😏'
+                },
+                type: 1
+            },
+            {
+                buttonId: ".⚡",
+                buttonText: {
+                    displayText: "🗿"
+                },
+                type: 1
+            }
+        ];
+
+        await Line.sendMessage(chjid + "@newsletter", {
+            ...message,
+            footer: wm,
+            buttons: buttons,
+            headerType: 1,
+            viewOnce: true
+        });
+
+        await sleep(2000);
+        await Line.sendMessage(m.chat, { react: { text: '✅', key: m.key } });
+    } catch (error) {
+        console.error(error);
+        m.reply('⚠️ Terjadi kesalahan saat mengunggah media.');
+    }
 }
 break
 
@@ -19203,7 +20453,7 @@ reply('Terjadi kesalahan saat memproses video. Silakan coba lagi.');
 break
 
 case 'ngl': {
-  if (!text) return m.reply('Example: .ngl Oyyy Nek');
+  if (!text) return m.reply('Example: .ngl Hai Beb');
   try {
     let link = 'https://ngl.link/callmeline89540'; 
     let pesan = encodeURIComponent(text); 
@@ -19220,6 +20470,23 @@ case 'ngl': {
   } catch (err) {
     m.reply(`Terjadi kesalahan: ${err.message}`);
   }
+}
+break
+
+case 'upskala':
+case 'upscaler':
+case 'upscale':
+case 'upscala': {
+  if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${p_c}`);
+  vreact();
+  let media = await Line.downloadAndSaveMediaMessage(quoted)
+  let url = await uploadMedia(media)
+  Line.sendMessage(m.chat, {
+    image: {url: `https://api.ryzendesu.vip/api/ai/remini?url=${url}` },
+    caption: 'Sukses'
+  }, {
+    quoted: m
+  });
 }
 break
 
@@ -19274,7 +20541,6 @@ case 'tourl': {
         return reply(`Kirim/reply gambar, video, atau audio dengan caption:\n${prefix + command}`);
     }
     await Line.sendMessage(m.chat, { react: { text: "🔎", key: m.key }});
-    const { uploadMedia } = require('./lib/general/uploader');
     let media;
     try {
         media = await Line.downloadMediaMessage(quoted);
@@ -19355,183 +20621,179 @@ case 'qcstick': {
   if (!args[1]) return m.reply(`Contoh: ${p_c} white halo`)
   if (text.length > 80) return m.reply(`Maximal 80 karakter!`)
   vreact()
-  let [color, ...message] = text.split(' ');
-  message = m.quoted ? m.quoted : message.join(' ');
-  let backgroundColor;
+  let [color, ...message] = text.split(' ')
+  message = m.quoted ? m.quoted : message.join(' ')
+  let backgroundColor
   switch (color) {
   case 'pink':
-    backgroundColor = '#f68ac9';
+    backgroundColor = '#f68ac9'
     break
   case 'blue':
-    backgroundColor = '#6cace4';
+    backgroundColor = '#6cace4'
     break
   case 'red':
-    backgroundColor = '#f44336';
+    backgroundColor = '#f44336'
     break
   case 'green':
-    backgroundColor = '#4caf50';
+    backgroundColor = '#4caf50'
     break
   case 'yellow':
-    backgroundColor = '#ffeb3b';
+    backgroundColor = '#ffeb3b'
     break
   case 'purple':
-    backgroundColor = '#9c27b0';
+    backgroundColor = '#9c27b0'
     break
   case 'darkblue':
-    backgroundColor = '#0d47a1';
+    backgroundColor = '#0d47a1'
     break
   case 'lightblue':
-    backgroundColor = '#03a9f4';
+    backgroundColor = '#03a9f4'
     break
   case 'ash':
-    backgroundColor = '#9e9e9e';
+    backgroundColor = '#9e9e9e'
     break
   case 'orange':
-    backgroundColor = '#ff9800';
+    backgroundColor = '#ff9800'
     break
   case 'black':
-    backgroundColor = '#000000';
+    backgroundColor = '#000000'
     break
   case 'white':
-    backgroundColor = '#ffffff';
+    backgroundColor = '#ffffff'
     break
   case 'teal':
-    backgroundColor = '#008080';
+    backgroundColor = '#008080'
     break
   case 'lightpink':
-    backgroundColor = '#FFC0CB';
+    backgroundColor = '#FFC0CB'
     break
   case 'chocolate':
-    backgroundColor = '#A52A2A';
+    backgroundColor = '#A52A2A'
+    break
   case 'salmon':
-    backgroundColor = '#FFA07A';
+    backgroundColor = '#FFA07A'
     break
   case 'magenta':
-    backgroundColor = '#FF00FF';
+    backgroundColor = '#FF00FF'
     break
   case 'tan':
-    backgroundColor = '#D2B48C';
+    backgroundColor = '#D2B48C'
     break
   case 'wheat':
-    backgroundColor = '#F5DEB3';
+    backgroundColor = '#F5DEB3'
     break
   case 'deeppink':
-    backgroundColor = '#FF1493';
+    backgroundColor = '#FF1493'
     break
   case 'fire':
-    backgroundColor = '#B22222';
+    backgroundColor = '#B22222'
     break
   case 'skyblue':
-    backgroundColor = '#00BFFF';
-    break
-  case 'orange':
-    backgroundColor = '#FF7F50';
+    backgroundColor = '#00BFFF'
     break
   case 'brightskyblue':
-    backgroundColor = '#1E90FF';
+    backgroundColor = '#1E90FF'
     break
   case 'hotpink':
-    backgroundColor = '#FF69B4';
+    backgroundColor = '#FF69B4'
     break
   case 'lightskyblue':
-    backgroundColor = '#87CEEB';
+    backgroundColor = '#87CEEB'
     break
   case 'seagreen':
-    backgroundColor = '#20B2AA';
+    backgroundColor = '#20B2AA'
     break
   case 'darkred':
-    backgroundColor = '#8B0000';
+    backgroundColor = '#8B0000'
     break
   case 'orangered':
-    backgroundColor = '#FF4500';
+    backgroundColor = '#FF4500'
     break
   case 'cyan':
-    backgroundColor = '#48D1CC';
+    backgroundColor = '#48D1CC'
     break
   case 'violet':
-    backgroundColor = '#BA55D3';
+    backgroundColor = '#BA55D3'
     break
   case 'mossgreen':
-    backgroundColor = '#00FF7F';
+    backgroundColor = '#00FF7F'
     break
   case 'darkgreen':
-    backgroundColor = '#008000';
+    backgroundColor = '#008000'
     break
   case 'navyblue':
-    backgroundColor = '#191970';
+    backgroundColor = '#191970'
     break
   case 'darkorange':
-    backgroundColor = '#FF8C00';
+    backgroundColor = '#FF8C00'
     break
   case 'darkpurple':
-    backgroundColor = '#9400D3';
+    backgroundColor = '#9400D3'
     break
   case 'fuchsia':
-    backgroundColor = '#FF00FF';
+    backgroundColor = '#FF00FF'
     break
   case 'darkmagenta':
-    backgroundColor = '#8B008B';
+    backgroundColor = '#8B008B'
     break
   case 'darkgray':
-    backgroundColor = '#2F4F4F';
+    backgroundColor = '#2F4F4F'
     break
   case 'peachpuff':
-    backgroundColor = '#FFDAB9';
+    backgroundColor = '#FFDAB9'
     break
   case 'darkishgreen':
-    backgroundColor = '#BDB76B';
+    backgroundColor = '#BDB76B'
     break
   case 'darkishred':
-    backgroundColor = '#DC143C';
+    backgroundColor = '#DC143C'
     break
   case 'goldenrod':
-    backgroundColor = '#DAA520';
+    backgroundColor = '#DAA520'
     break
   case 'darkishgray':
-    backgroundColor = '#696969';
+    backgroundColor = '#696969'
     break
   case 'darkishpurple':
-    backgroundColor = '#483D8B';
+    backgroundColor = '#483D8B'
     break
   case 'gold':
-    backgroundColor = '#FFD700';
+    backgroundColor = '#FFD700'
     break
   case 'silver':
-    backgroundColor = '#C0C0C0';
+    backgroundColor = '#C0C0C0'
     break
   default:
     return m.reply('Warna tersebut tidak ditemukan!')
   }
-  let obj = {
+  const username = db.data.users[m.sender].nama
+  const avatar = await Line.profilePictureUrl(m.sender, "image").catch(() => 'https://files.catbox.moe/nwvkbt.png')
+  const json = {
     type: 'quote',
     format: 'png',
     backgroundColor,
-    width: 1900,
-    height: 1024,
-    scale: 100,
+    width: 512,
+    height: 768,
+    scale: 2,
     messages: [{
       entities: [],
       avatar: true,
       from: {
         id: 1,
-        name: db.data.users[m.sender].nama,
-        photo: {
-          url: await Line.profilePictureUrl(m.sender, "image").catch(() => 'https://telegra.ph/file/6880771a42bad09dd6087.jpg'),
-        }
+        name: username,
+        photo: { url: avatar }
       },
       text: message,
-      replyMessage: {},
-    }, ],
-  };
-  let response = await axios.post('https://quotly.netorare.codes/generate', obj, {
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
-  let buffer = Buffer.from(response.data.result.image, 'base64');
+      replyMessage: {}
+    }]
+  }
+  const response = await axios.post('https://bot.lyo.su/quote/generate', json, {
+    headers: { 'Content-Type': 'application/json' }
+  })
+  const buffer = Buffer.from(response.data.result.image, 'base64')
   Line.sendImageAsSticker(m.chat, buffer, m, {
     packname: ``,
-    author: `${author}`
+    author: `${author} | ${username}`
   })
 }
 break
@@ -19570,7 +20832,7 @@ case 'smeme': {
     atas = text.split('|')[0] ? text.split('|')[0] : '-'
     bawah = text.split('|')[1] ? text.split('|')[1] : '-'
     mee = await Line.downloadAndSaveMediaMessage(quoted)
-    mem = await CatBox(mee)
+    mem = await uploadMedia(mee)
     let smeme = await fetch(`https://api.memegen.link/images/custom/${Enc(atas)}/${Enc(bawah)}.png?background=${mem}`)
     let smem = await smeme.buffer()
     await Line.sendImageAsSticker(m.chat, smem, m, {
@@ -20043,7 +21305,7 @@ case 'beautiful': {
   if (!/image/.test(mime)) return m.reply(`Kirim/kutip gambar dengan caption ${p_c}`);
   vreact();
   let media = await Line.downloadAndSaveMediaMessage(quoted)
-  let url = await CatBox(media)
+  let url = await uploadMedia(media)
   Line.sendMessage(m.chat, {
     image: {url: `https://vapis.my.id/api/${command}?url=${url}` }}, {
     quoted: m
@@ -20059,6 +21321,18 @@ case 'textimage': {
   if (text.length > 150) return m.reply(`Karakter terbatas, max 150!`)
   vreact()
   Line.sendMessage(m.chat, {image: {url: `https://vapis.my.id/api/txtimage?q=${text}` }}, {quoted: m})
+}
+break
+
+case 'realistic': case '3dmodel': {
+    	if (!text) return reply(`*Example:* ${prefix + command} blue sky`)
+await Line.sendMessage(m.chat, { react: { text: "⏱️",key: m.key,}}) 
+try {
+   	  reply("Tunggu Senpai")
+Line.sendMessage(m.chat, { image: { url: `https://imgen.duck.mom/prompt/${encodeURIComponent(text)}`}, caption: `Sukses Senpai\nDengan Promt:\n*${text}*`}, { quoted: m})
+	} catch {
+	  reply('yah Error kak laporankan ke owner agar di perbaiki')
+	}
 }
 break
 
@@ -21044,9 +22318,9 @@ break
 
 case "vps-1gb": case "vps-2gb1": case "vps-2gb2": case "vps-4gb": case "vps-8gb": case "vps-16gb": {
 if (!isOwner) return reply('Fitur khusus owner') 
-if (!text) return Reply(example("hostname,password"))
+if (!text) return reply("hostname,password")
 let [hostname, password] = text.split(",");
-if (!hostname || !password) return Reply(example("hostname,password"));
+if (!hostname || !password) return reply("hostname,password");
 hostname = hostname.toLowerCase().trim();
 password = password.trim();
 if (!hostname.match(/^[a-zA-Z0-9-]+$/)) {
